@@ -321,6 +321,36 @@ class STTService extends EventEmitter {
   }
 
   /**
+   * Normalizes language code to the exact BCP-47 locale format supported by Gnani AI
+   * (e.g. 'hi' -> 'hi-IN', 'te' -> 'te-IN', 'ta' -> 'ta-IN', etc.)
+   * @param {string} [lang]
+   * @returns {string}
+   * @private
+   */
+  _normalizeGnaniLanguageCode(lang) {
+    if (!lang) return 'indic-auto';
+    const clean = String(lang).trim().toLowerCase();
+    const map = {
+      'hi': 'hi-IN',
+      'te': 'te-IN',
+      'ta': 'ta-IN',
+      'kn': 'kn-IN',
+      'mr': 'mr-IN',
+      'bn': 'bn-IN',
+      'gu': 'gu-IN',
+      'pa': 'pa-IN',
+      'ml': 'ml-IN',
+      'as': 'as-IN',
+      'en': 'en-IN',
+      'indic-auto': 'indic-auto',
+      'auto': 'indic-auto'
+    };
+    if (map[clean]) return map[clean];
+    if (clean.includes('-in')) return clean;
+    return clean;
+  }
+
+  /**
    * Gnani AI Prisma STT API (prisma-v3.0 / v2.5, Indian languages & English).
    * @private
    */
@@ -329,11 +359,14 @@ class STTService extends EventEmitter {
       throw new Error('GNANI_API_KEY is missing');
     }
 
+    const rawLang = options.language || this.gnaniLanguage || 'indic-auto';
+    const targetLang = this._normalizeGnaniLanguageCode(rawLang);
+
     const formData = new FormData();
     const audioBlob = new Blob([wavBuffer], { type: 'audio/wav' });
     formData.append('audio_file', audioBlob, 'audio.wav');
     formData.append('model', options.model || this.gnaniModel || 'prisma-v3.0');
-    formData.append('language_code', options.language || this.gnaniLanguage || 'indic-auto');
+    formData.append('language_code', targetLang);
 
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.timeoutMs);
@@ -496,7 +529,26 @@ class STTService extends EventEmitter {
     }
 
     const base64Audio = wavBuffer.toString('base64');
-    const prompt = 'Transcribe the spoken audio verbatim in English (or verbatim in Latin/English script if terms are mixed). Do NOT translate into another language. If there is no discernible speech or only silence/background noise, return an empty string. Return ONLY the verbatim transcribed text without quotes, markdown formatting, or commentary.';
+    const lang = this._normalizeGnaniLanguageCode(options.language || this.gnaniLanguage || 'indic-auto');
+    let langInstruction = '';
+    if (lang.startsWith('hi')) {
+      langInstruction = 'Transcribe the spoken audio in Hindi Devanagari script (हिन्दी लिपि, e.g. "मेरा नाम मनोज है").';
+    } else if (lang.startsWith('te')) {
+      langInstruction = 'Transcribe the spoken audio in Telugu script (తెలుగు లిపి, e.g. "నా పేరు మనోజ్").';
+    } else if (lang.startsWith('ta')) {
+      langInstruction = 'Transcribe the spoken audio in Tamil script (தமிழ் எழுத்து).';
+    } else if (lang.startsWith('kn')) {
+      langInstruction = 'Transcribe the spoken audio in Kannada script (ಕನ್ನಡ ಲಿಪಿ).';
+    } else if (lang.startsWith('mr')) {
+      langInstruction = 'Transcribe the spoken audio in Marathi Devanagari script.';
+    } else if (lang.startsWith('bn')) {
+      langInstruction = 'Transcribe the spoken audio in Bengali script.';
+    } else if (lang === 'indic-auto') {
+      langInstruction = 'Transcribe the spoken audio in the native script of the spoken words (e.g. Hindi in Devanagari, Telugu in Telugu script, or English in Latin script).';
+    } else {
+      langInstruction = 'Transcribe the spoken audio verbatim in the spoken language.';
+    }
+    const prompt = `${langInstruction} Do NOT translate into another language. If there is no discernible speech or only silence/background noise, return an empty string. Return ONLY the verbatim transcribed text without quotes, markdown formatting, or commentary.`;
 
     const primaryModel = this.geminiModel || 'gemini-3.5-flash';
     const modelsToTry = [primaryModel, 'gemini-3.5-flash', 'gemini-3.5-flash-lite'].filter((v, i, a) => a.indexOf(v) === i);

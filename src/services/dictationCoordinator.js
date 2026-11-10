@@ -192,8 +192,12 @@ class DictationCoordinator extends EventEmitter {
           : Buffer.from(audioOrSimulatedText.data || audioOrSimulatedText);
         console.log(`[Coordinator] Transcribing real audio buffer (${buffer.length} bytes)...`);
         const activeModelSetting = this.db ? this.db.getSetting('model', '') : '';
+        const activeLanguageSetting = this.db ? this.db.getSetting('gnaniLanguage', 'indic-auto') : 'indic-auto';
         const providerOverride = (activeModelSetting === 'local-offline' || activeModelSetting === 'local-whisper') ? 'local_server' : undefined;
-        const asrResult = await this.sttService.transcribe(buffer, { provider: providerOverride });
+        const asrResult = await this.sttService.transcribe(buffer, { 
+          provider: providerOverride,
+          language: activeLanguageSetting
+        });
         rawAsr = asrResult.text || asrResult.rawAsrText || '';
       } catch (err) {
         console.warn('[Coordinator] STT transcription error:', err.message);

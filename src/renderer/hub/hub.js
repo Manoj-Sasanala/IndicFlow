@@ -506,7 +506,12 @@ async function loadSettings() {
       if (settings.model && settingModel) settingModel.value = settings.model;
       if (settings.caretTracking && settingCaretTracking) settingCaretTracking.checked = settings.caretTracking === 'true';
       if (settingGnaniApiKey) settingGnaniApiKey.value = settings.gnaniApiKey || '';
-      if (settingGnaniLanguage) settingGnaniLanguage.value = settings.gnaniLanguage || 'indic-auto';
+      if (settingGnaniLanguage) {
+        const rawLang = settings.gnaniLanguage || 'indic-auto';
+        const normalized = (rawLang.includes('-') || rawLang === 'indic-auto') ? rawLang : `${rawLang}-IN`;
+        settingGnaniLanguage.value = normalized;
+        if (!settingGnaniLanguage.value) settingGnaniLanguage.value = rawLang;
+      }
       if (settingGeminiApiKey) settingGeminiApiKey.value = settings.geminiApiKey || '';
       if (settingGroqApiKey) settingGroqApiKey.value = settings.groqApiKey || '';
     } else {

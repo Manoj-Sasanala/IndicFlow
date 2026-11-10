@@ -97,7 +97,7 @@ async function runTests() {
     assert(hotkey === 'Double-Fn / CapsLock', `Default hotkey loaded: ${hotkey}`);
 
     const model = db.getSetting('model');
-    assert(model === 'prisma-v3.0' || model === 'local-whisper' || model === 'whisper-large-v3-turbo', `Default model loaded: ${model}`);
+    assert(model === 'prisma-v3.0' || model === 'local-offline' || model === 'local-whisper', `Default model loaded: ${model}`);
 
     // Test Settings update
     db.setSetting('theme', 'dark');

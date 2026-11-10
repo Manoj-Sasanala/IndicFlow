@@ -28,7 +28,7 @@ const path = require('node:path');
 const fs = require('node:fs');
 const { FlowDatabase } = require('../db/database.js');
 const { HelperSupervisor } = require('../services/helperSupervisor.js');
-const { LocalWhisperSupervisor } = require('../services/localWhisperSupervisor.js');
+const { LocalEngineSupervisor } = require('../services/localEngineSupervisor.js');
 const { WindowManager } = require('./windowManager.js');
 const { DictationCoordinator } = require('../services/dictationCoordinator.js');
 
@@ -38,7 +38,7 @@ app.commandLine.appendSwitch('disable-features', 'AudioServiceOutOfProcess');
 
 let db = null;
 let helper = null;
-let localWhisperDaemon = null;
+let localEngineDaemon = null;
 let windowManager = null;
 let coordinator = null;
 let tray = null;
@@ -72,7 +72,7 @@ if (!gotTheLock) {
     initDatabase();
     initWindowManager();
     initHelperSupervisor();
-    initLocalWhisperDaemon();
+    initLocalEngineDaemon();
     initDictationCoordinator();
     initTray();
     registerGlobalShortcuts();
@@ -116,11 +116,11 @@ function initHelperSupervisor() {
   helper.start();
 }
 
-function initLocalWhisperDaemon() {
-  localWhisperDaemon = new LocalWhisperSupervisor({ port: 8089 });
-  if (localWhisperDaemon.isInstalled()) {
-    console.log('[Flow Main] Initializing local in-memory Whisper daemon...');
-    localWhisperDaemon.start();
+function initLocalEngineDaemon() {
+  localEngineDaemon = new LocalEngineSupervisor({ port: 8089 });
+  if (localEngineDaemon.isInstalled()) {
+    console.log('[Flow Main] Initializing local on-device engine daemon...');
+    localEngineDaemon.start();
   }
 }
 
@@ -296,9 +296,16 @@ function registerIpcHandlers() {
     return { success: true };
   });
 
+  ipcMain.handle('flow:get-local-engine-status', () => {
+    if (coordinator?.sttService?.hasLocalEngineBinary) {
+      return coordinator.sttService.hasLocalEngineBinary();
+    }
+    return { ready: false, exePath: null, modelPath: null };
+  });
+
   ipcMain.handle('flow:get-local-whisper-status', () => {
-    if (coordinator?.sttService?.hasLocalWhisperBinary) {
-      return coordinator.sttService.hasLocalWhisperBinary();
+    if (coordinator?.sttService?.hasLocalEngineBinary) {
+      return coordinator.sttService.hasLocalEngineBinary();
     }
     return { ready: false, exePath: null, modelPath: null };
   });
@@ -364,6 +371,6 @@ app?.on('window-all-closed', (e) => {
 app?.on('will-quit', () => {
   globalShortcut.unregisterAll();
   helper?.stop();
-  localWhisperDaemon?.stop();
+  localEngineDaemon?.stop();
   db?.close();
 });

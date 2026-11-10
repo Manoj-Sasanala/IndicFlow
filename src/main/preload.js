@@ -65,5 +65,6 @@ contextBridge.exposeInMainWorld('flowAPI', {
   maximizeHub: () => ipcRenderer.invoke('flow:window-maximize'),
   closeHub: () => ipcRenderer.invoke('flow:window-close'),
   getHelperStatus: () => ipcRenderer.invoke('flow:get-helper-status'),
-  getLocalWhisperStatus: () => ipcRenderer.invoke('flow:get-local-whisper-status')
+  getLocalEngineStatus: () => ipcRenderer.invoke('flow:get-local-engine-status'),
+  getLocalWhisperStatus: () => ipcRenderer.invoke('flow:get-local-engine-status')
 });

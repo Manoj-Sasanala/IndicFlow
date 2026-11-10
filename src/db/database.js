@@ -99,13 +99,10 @@ class FlowDatabase {
   }
 
   _seedDefaultSettings() {
-    const hasLocal = fs.existsSync(path.resolve(__dirname, '../../native/whisper/ggml-base.en.bin'));
-    const defaultModel = hasLocal ? 'local-whisper' : 'whisper-large-v3-turbo';
-
     const defaultSettings = [
       ['hotkey', 'Double-Fn / CapsLock'],
       ['activationMode', 'push_to_talk'],
-      ['model', defaultModel],
+      ['model', 'prisma-v3.0'],
       ['primaryProvider', 'gnani_prisma'],
       ['gnaniApiKey', process.env.GNANI_API_KEY || 'vach_1ytE2CY5X2EAmc5L3wuTWkGhJ68RnojDdCYDsXvUVyXdJGxiJ5yz4hMbZS5gE7RdnROeYrso6PoFnyQ5URmPzx6pEYdRMUTL_428d9096381302fb25361cdda2d6b97e'],
       ['gnaniModel', 'prisma-v3.0'],

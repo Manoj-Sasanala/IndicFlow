@@ -445,8 +445,10 @@ function bindSettingsEvents() {
     } else if (val.startsWith('gemini')) {
       saveSetting('geminiModel', val);
       saveSetting('primaryProvider', 'gemini');
-    } else if (val.startsWith('whisper-large')) {
+    } else if (val.startsWith('whisper-large') || val.startsWith('groq')) {
       saveSetting('primaryProvider', 'groq');
+    } else if (val === 'local-offline' || val === 'local-whisper') {
+      saveSetting('primaryProvider', 'local_server');
     }
   });
   settingCaretTracking?.addEventListener('change', (e) => saveSetting('caretTracking', String(e.target.checked)));
@@ -472,16 +474,16 @@ async function loadSettings() {
       if (settingGroqApiKey) settingGroqApiKey.value = settings.groqApiKey || '';
     }
 
-    // Check local whisper engine status
-    const whisperStatus = await window.flowAPI.getLocalWhisperStatus?.();
-    const badge = document.getElementById('local-whisper-badge');
+    // Check local engine status
+    const engineStatus = await (window.flowAPI.getLocalEngineStatus?.() || window.flowAPI.getLocalWhisperStatus?.());
+    const badge = document.getElementById('local-engine-badge') || document.getElementById('local-whisper-badge');
     if (badge) {
-      if (whisperStatus && whisperStatus.ready) {
+      if (engineStatus && engineStatus.ready) {
         badge.textContent = 'Installed & Ready';
         badge.style.background = 'rgba(34, 197, 94, 0.15)';
         badge.style.color = '#22c55e';
       } else {
-        badge.textContent = 'Setup Available (scripts/setup-local-whisper.ps1)';
+        badge.textContent = 'Setup Available (scripts/setup-offline-engine.ps1)';
         badge.style.background = 'rgba(234, 179, 8, 0.15)';
         badge.style.color = '#eab308';
       }

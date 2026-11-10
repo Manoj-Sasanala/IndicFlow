@@ -580,13 +580,13 @@ class STTService extends EventEmitter {
   }
 
   /**
-   * Checks if local whisper.cpp binary and model exist on disk.
+   * Checks if local on-device engine binary and model exist on disk.
    * @returns {{ ready: boolean, exePath: string | null, modelPath: string | null }}
    */
-  hasLocalWhisperBinary() {
-    const whisperDir = path.resolve(__dirname, '../../native/whisper');
+  hasLocalEngineBinary() {
+    const engineDir = path.resolve(__dirname, '../../native/local-engine');
     const exeCandidates = ['whisper-cli.exe', 'main.exe'];
-    const explicitModel = process.env.FLOW_WHISPER_MODEL;
+    const explicitModel = process.env.FLOW_LOCAL_MODEL || process.env.FLOW_WHISPER_MODEL;
     const modelCandidates = explicitModel ? [explicitModel] : [
       'ggml-small.en.bin',
       'ggml-base.en.bin',
@@ -594,17 +594,21 @@ class STTService extends EventEmitter {
       'ggml-tiny.en.bin'
     ];
 
-    const exe = exeCandidates.find(e => fs.existsSync(path.join(whisperDir, e)));
-    const model = modelCandidates.find(m => fs.existsSync(path.join(whisperDir, m)));
+    const exe = exeCandidates.find(e => fs.existsSync(path.join(engineDir, e)));
+    const model = modelCandidates.find(m => fs.existsSync(path.join(engineDir, m)));
 
     if (exe && model) {
       return {
         ready: true,
-        exePath: path.join(whisperDir, exe),
-        modelPath: path.join(whisperDir, model)
+        exePath: path.join(engineDir, exe),
+        modelPath: path.join(engineDir, model)
       };
     }
     return { ready: false, exePath: null, modelPath: null };
+  }
+
+  hasLocalWhisperBinary() {
+    return this.hasLocalEngineBinary();
   }
 
   /**

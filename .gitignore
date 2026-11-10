@@ -23,8 +23,10 @@ build/
 *.ilk
 *.exp
 
-# Large binary models
-native/whisper/*.bin
+# Local on-device engine & binary models
+native/whisper/
+native/local-engine/
+*.bin
 *.gguf
 
 # OS metadata

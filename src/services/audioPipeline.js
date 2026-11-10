@@ -5,7 +5,7 @@
  * Audio Streaming & Processing Pipeline for IndicFlow
  * - 16kHz 16-bit Mono PCM chunking & buffering
  * - Fast downsampling (e.g. 48kHz/44.1kHz -> 16kHz)
- * - RIFF/WAV binary header construction for Whisper APIs
+ * - RIFF/WAV binary header construction for STT APIs
  * - Real-time RMS audio power & Voice Activity Detection (VAD)
  * - Monotonic sequence numbering and streaming transport
  */
@@ -13,8 +13,8 @@
 /**
  * Generates a valid 44-byte standard RIFF/WAV header for 16-bit PCM data.
  * @param {number} dataLengthInBytes - Length of raw PCM data
- * @param {number} [sampleRate=16000] - Sample rate in Hz (Whisper default: 16000)
- * @param {number} [numChannels=1] - Number of audio channels (Whisper default: 1 mono)
+ * @param {number} [sampleRate=16000] - Sample rate in Hz (Gnani STT standard: 16000)
+ * @param {number} [numChannels=1] - Number of audio channels (Standard 1 mono)
  * @param {number} [bitDepth=16] - Bits per sample (16-bit standard)
  * @returns {Buffer} 44-byte WAV header Buffer
  */

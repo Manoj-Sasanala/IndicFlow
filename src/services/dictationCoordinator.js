@@ -193,6 +193,9 @@ class DictationCoordinator extends EventEmitter {
       return;
     }
 
+    if (this._isProcessingSession) return;
+    this._isProcessingSession = true;
+
     const duration = Math.max(1, Math.round((Date.now() - this.sessionStartTime) / 1000));
     this._setState('processing', { duration });
 
@@ -246,6 +249,7 @@ class DictationCoordinator extends EventEmitter {
     const isHallucinatedTimestamp = /^(?:\[?\d{1,2}:\d{2}(?:\.\d+)?\]?\s*)+$/.test(rawAsr.trim());
     if (!rawAsr || rawAsr.trim().length === 0 || isHallucinatedTimestamp) {
       console.log('[Coordinator] No speech recognized (silence, timestamp hallucination, or error). Aborting paste without inserting fake text.');
+      this._isProcessingSession = false;
       this._setState('idle', { reason: 'no_speech' });
       if (this.windowManager) {
         this.windowManager.hidePill();
@@ -365,6 +369,7 @@ class DictationCoordinator extends EventEmitter {
 
     // Step 7: Auto-hide pill after 1000ms
     this.successHideTimer = setTimeout(() => {
+      this._isProcessingSession = false;
       this._setState('idle');
       if (this.windowManager) {
         this.windowManager.hidePill();
@@ -380,6 +385,7 @@ class DictationCoordinator extends EventEmitter {
       this.successHideTimer = null;
     }
 
+    this._isProcessingSession = false;
     this._setState('idle');
     if (this.windowManager) {
       this.windowManager.hidePill();

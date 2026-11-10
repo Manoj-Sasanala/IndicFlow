@@ -222,6 +222,10 @@ function registerGlobalShortcuts() {
 
     try {
       globalShortcut.register(electronAccelerator, () => {
+        // Fallback: only trigger if native helper is not connected
+        if (helper && helper.isReady) {
+          return;
+        }
         if (coordinator.state === 'idle') {
           coordinator.startDictation();
         } else {
@@ -236,6 +240,9 @@ function registerGlobalShortcuts() {
     if (electronAccelerator !== 'CommandOrControl+Alt+Space') {
       try {
         globalShortcut.register('CommandOrControl+Alt+Space', () => {
+          if (helper && helper.isReady) {
+            return;
+          }
           if (coordinator.state === 'idle') {
             coordinator.startDictation();
           } else {

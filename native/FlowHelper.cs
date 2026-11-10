@@ -862,8 +862,8 @@ namespace IndicFlowNativeHelper
                             if (_isHotkeyActive)
                             {
                                 HandleHotkeyRelease();
-                                return (IntPtr)1;
                             }
+                            // Never suppress modifier key-up so Windows releases Alt cleanly
                         }
                         else if (_isHotkeyActive && (key == Keys.ControlKey || key == Keys.LControlKey || key == Keys.RControlKey ||
                             key == Keys.ShiftKey || key == Keys.LShiftKey || key == Keys.RShiftKey ||
@@ -1250,12 +1250,6 @@ namespace IndicFlowNativeHelper
                     Thread.Sleep(60);
                 }
 
-                // Settle and cancel any active menu bar state in VS Code / Antigravity IDE
-                keybd_event(0x1B, 0x01, 0, UIntPtr.Zero);
-                Thread.Sleep(10);
-                keybd_event(0x1B, 0x01, KEYEVENTF_KEYUP, UIntPtr.Zero);
-                Thread.Sleep(20);
-
                 uint cfCanInclude = RegisterClipboardFormat("CanIncludeInClipboardHistory");
                 uint cfCanUpload = RegisterClipboardFormat("CanUploadToCloudClipboard");
 
@@ -1350,24 +1344,14 @@ namespace IndicFlowNativeHelper
 
         private static void SendCtrlV()
         {
-            // Ensure all modifier keys are released before synthesizing Ctrl+V
+            // Ensure all modifier keys are completely released before synthesizing Ctrl+V
             ReleaseModifier(VK_MENU);
             ReleaseModifier(VK_SHIFT);
             ReleaseModifier(VK_LWIN);
             ReleaseModifier(VK_RWIN);
             Thread.Sleep(20);
 
-            // 1. Synthesize Ctrl+V via keybd_event (direct raw input queue dispatch for Chromium / Electron / Antigravity IDE)
-            keybd_event((byte)VK_CONTROL, 0x1D, 0, UIntPtr.Zero);
-            Thread.Sleep(30);
-            keybd_event((byte)VK_V, 0x2F, 0, UIntPtr.Zero);
-            Thread.Sleep(40);
-            keybd_event((byte)VK_V, 0x2F, KEYEVENTF_KEYUP, UIntPtr.Zero);
-            Thread.Sleep(20);
-            keybd_event((byte)VK_CONTROL, 0x1D, KEYEVENTF_KEYUP, UIntPtr.Zero);
-            Thread.Sleep(20);
-
-            // 2. Also send via SendInput with explicit scan codes as dual guarantee
+            // Exactly ONE clean, atomic SendInput dispatch for Ctrl+V
             INPUT[] inputs = new INPUT[4];
             inputs[0].type = INPUT_KEYBOARD;
             inputs[0].mkhi.ki.wVk = VK_CONTROL;
@@ -1394,21 +1378,18 @@ namespace IndicFlowNativeHelper
 
         private static void ReleaseModifier(ushort vk)
         {
-            if ((GetAsyncKeyState(vk) & 0x8000) != 0)
+            if (vk == VK_MENU)
             {
-                if (vk == VK_MENU)
-                {
-                    keybd_event(0xE8, 0, 0, UIntPtr.Zero);
-                    keybd_event(0xE8, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
-                }
-                keybd_event((byte)vk, (byte)MapVirtualKey(vk, 0), KEYEVENTF_KEYUP, UIntPtr.Zero);
-                INPUT up = new INPUT();
-                up.type = INPUT_KEYBOARD;
-                up.mkhi.ki.wVk = vk;
-                up.mkhi.ki.wScan = (ushort)MapVirtualKey(vk, 0);
-                up.mkhi.ki.dwFlags = KEYEVENTF_KEYUP;
-                SendInput(1, new INPUT[] { up }, Marshal.SizeOf(typeof(INPUT)));
+                keybd_event(0xE8, 0, 0, UIntPtr.Zero);
+                keybd_event(0xE8, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
             }
+            keybd_event((byte)vk, (byte)MapVirtualKey(vk, 0), KEYEVENTF_KEYUP, UIntPtr.Zero);
+            INPUT up = new INPUT();
+            up.type = INPUT_KEYBOARD;
+            up.mkhi.ki.wVk = vk;
+            up.mkhi.ki.wScan = (ushort)MapVirtualKey(vk, 0);
+            up.mkhi.ki.dwFlags = KEYEVENTF_KEYUP;
+            SendInput(1, new INPUT[] { up }, Marshal.SizeOf(typeof(INPUT)));
         }
 
         // -------------------------------------------------------------

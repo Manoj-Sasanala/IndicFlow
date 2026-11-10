@@ -531,10 +531,10 @@ async function loadSettings() {
       if (settings.caretTracking && settingCaretTracking) settingCaretTracking.checked = settings.caretTracking === 'true';
       if (settingGnaniApiKey) settingGnaniApiKey.value = settings.gnaniApiKey || '';
       if (settingGnaniLanguage) {
-        const rawLang = settings.gnaniLanguage || 'indic-auto';
-        const normalized = (rawLang.includes('-') || rawLang === 'indic-auto') ? rawLang : `${rawLang}-IN`;
+        const rawLang = settings.gnaniLanguage || 'en-IN';
+        const normalized = (rawLang === 'indic-auto' || rawLang === 'auto') ? 'en-IN' : (rawLang.includes('-') ? rawLang : `${rawLang}-IN`);
         settingGnaniLanguage.value = normalized;
-        if (!settingGnaniLanguage.value) settingGnaniLanguage.value = rawLang;
+        if (!settingGnaniLanguage.value) settingGnaniLanguage.value = 'en-IN';
       }
       if (settingGeminiApiKey) settingGeminiApiKey.value = settings.geminiApiKey || '';
       if (settingGroqApiKey) settingGroqApiKey.value = settings.groqApiKey || '';

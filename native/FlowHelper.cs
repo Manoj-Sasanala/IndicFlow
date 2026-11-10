@@ -173,6 +173,18 @@ namespace IndicFlowNativeHelper
         [DllImport("user32.dll")]
         private static extern IntPtr GetShellWindow();
 
+        [DllImport("kernel32.dll")]
+        private static extern uint GetCurrentThreadId();
+
+        [DllImport("user32.dll")]
+        private static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
+
+        [DllImport("user32.dll")]
+        private static extern bool BringWindowToTop(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        private static extern ushort MapVirtualKey(uint uCode, uint uMapType);
+
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
 
@@ -251,6 +263,8 @@ namespace IndicFlowNativeHelper
         private static volatile string _pendingPasteText = null;
         private static readonly object _writeLock = new object();
         private static StreamWriter _fd3Writer = null;
+        private static StreamWriter _stdoutWriter = null;
+        private static uint _parentPid = 0;
         private static bool _isRunning = true;
 
         // -------------------------------------------------------------
@@ -263,6 +277,22 @@ namespace IndicFlowNativeHelper
             {
                 Console.OutputEncoding = Encoding.UTF8;
                 Console.InputEncoding = Encoding.UTF8;
+            }
+            catch { }
+
+            try
+            {
+                _stdoutWriter = new StreamWriter(Console.OpenStandardOutput(), new UTF8Encoding(false)) { AutoFlush = true };
+            }
+            catch { }
+
+            try
+            {
+                string ppidStr = Environment.GetEnvironmentVariable("FLOW_PARENT_PID");
+                if (!string.IsNullOrEmpty(ppidStr))
+                {
+                    uint.TryParse(ppidStr, out _parentPid);
+                }
             }
             catch { }
 
@@ -372,8 +402,16 @@ namespace IndicFlowNativeHelper
             {
                 try
                 {
-                    Console.WriteLine(json);
-                    Console.Out.Flush();
+                    if (_stdoutWriter != null)
+                    {
+                        _stdoutWriter.WriteLine(json);
+                        _stdoutWriter.Flush();
+                    }
+                    else
+                    {
+                        Console.WriteLine(json);
+                        Console.Out.Flush();
+                    }
                 }
                 catch { }
 
@@ -400,34 +438,65 @@ namespace IndicFlowNativeHelper
         }
 
         // -------------------------------------------------------------
-        // IPC Input Reader Loop
+        // IPC Input Reader Loop (Strict UTF-8)
         // -------------------------------------------------------------
         private static void IpcReaderLoop()
         {
-            while (_isRunning)
+            try
             {
-                string line = null;
-                try
+                using (Stream stdinStream = Console.OpenStandardInput())
+                using (StreamReader reader = new StreamReader(stdinStream, new UTF8Encoding(false), false, 4096))
                 {
-                    line = Console.ReadLine();
-                }
-                catch
-                {
-                    break;
-                }
+                    while (_isRunning)
+                    {
+                        string line = reader.ReadLine();
+                        if (line == null)
+                        {
+                            ExitApplication();
+                            break;
+                        }
 
-                if (line == null)
-                {
-                    ExitApplication();
-                    break;
-                }
-
-                line = line.Trim();
-                if (line.Length > 0)
-                {
-                    ProcessIpcMessage(line);
+                        line = line.Trim();
+                        if (line.Length > 0)
+                        {
+                            ProcessIpcMessage(line);
+                        }
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                LogStderr("IpcReaderLoop error: " + ex.Message);
+            }
+        }
+
+        private static bool IsOwnProcessWindow(IntPtr hWnd)
+        {
+            if (hWnd == IntPtr.Zero) return true;
+            uint pid;
+            GetWindowThreadProcessId(hWnd, out pid);
+            if (pid == (uint)Process.GetCurrentProcess().Id) return true;
+            if (_parentPid != 0 && pid == _parentPid) return true;
+            return false;
+        }
+
+        private static string FixMojibakeIfNeeded(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return text;
+            if (text.IndexOf('\u00E0') >= 0 || text.IndexOf('\u00C3') >= 0)
+            {
+                try
+                {
+                    byte[] rawBytes = Encoding.GetEncoding(1252).GetBytes(text);
+                    string repaired = Encoding.UTF8.GetString(rawBytes);
+                    if (!repaired.Contains("\uFFFD"))
+                    {
+                        return repaired;
+                    }
+                }
+                catch { }
+            }
+            return text;
         }
 
         private static void ProcessIpcMessage(string jsonStr)
@@ -703,6 +772,12 @@ namespace IndicFlowNativeHelper
                             {
                                 if (!_isHotkeyActive)
                                 {
+                                    IntPtr fg = GetForegroundWindow();
+                                    if (fg != IntPtr.Zero && !IsOwnProcessWindow(fg))
+                                    {
+                                        _lastTargetHwnd = fg;
+                                    }
+
                                     _isHotkeyActive = true;
                                     int now = Environment.TickCount;
                                     int diff = now - _lastTapReleaseTime;
@@ -828,9 +903,7 @@ namespace IndicFlowNativeHelper
                 IntPtr hwnd = GetForegroundWindow();
                 if (hwnd == IntPtr.Zero) return;
 
-                uint pid;
-                GetWindowThreadProcessId(hwnd, out pid);
-                if (pid != (uint)Process.GetCurrentProcess().Id)
+                if (!IsOwnProcessWindow(hwnd))
                 {
                     _lastTargetHwnd = hwnd;
                 }
@@ -1090,18 +1163,12 @@ namespace IndicFlowNativeHelper
         }
 
         // -------------------------------------------------------------
-        // Synthetic Paste Injection & Delayed Clipboard Rendering
+        // Synthetic Paste Injection & Direct Clipboard Placement
         // -------------------------------------------------------------
         private static bool ExecuteSyntheticPaste(string textToPaste)
         {
             if (textToPaste == null) textToPaste = "";
-
-            IDataObject previousData = null;
-            try
-            {
-                previousData = Clipboard.GetDataObject();
-            }
-            catch { }
+            textToPaste = FixMojibakeIfNeeded(textToPaste);
 
             try
             {
@@ -1109,18 +1176,30 @@ namespace IndicFlowNativeHelper
                 IntPtr currentForeground = GetForegroundWindow();
                 if (_lastTargetHwnd != IntPtr.Zero && _lastTargetHwnd != currentForeground)
                 {
+                    uint myThread = GetCurrentThreadId();
+                    uint dummyPid;
+                    uint targetThread = GetWindowThreadProcessId(_lastTargetHwnd, out dummyPid);
+                    uint fgThread = GetWindowThreadProcessId(currentForeground, out dummyPid);
+
+                    if (myThread != targetThread && targetThread != 0) AttachThreadInput(myThread, targetThread, true);
+                    if (fgThread != 0 && fgThread != targetThread) AttachThreadInput(fgThread, targetThread, true);
+
                     SetForegroundWindow(_lastTargetHwnd);
-                    Thread.Sleep(30);
+                    BringWindowToTop(_lastTargetHwnd);
+
+                    if (myThread != targetThread && targetThread != 0) AttachThreadInput(myThread, targetThread, false);
+                    if (fgThread != 0 && fgThread != targetThread) AttachThreadInput(fgThread, targetThread, false);
+
+                    Thread.Sleep(50);
                 }
 
                 uint cfCanInclude = RegisterClipboardFormat("CanIncludeInClipboardHistory");
                 uint cfCanUpload = RegisterClipboardFormat("CanUploadToCloudClipboard");
 
-                IntPtr ownerHwnd = _msgWindow != null ? _msgWindow.Handle : IntPtr.Zero;
                 bool clipboardSet = false;
                 for (int attempt = 0; attempt < 10; attempt++)
                 {
-                    if (OpenClipboard(ownerHwnd))
+                    if (OpenClipboard(IntPtr.Zero))
                     {
                         clipboardSet = true;
                         break;
@@ -1187,30 +1266,9 @@ namespace IndicFlowNativeHelper
                 }
 
                 // Settle clipboard notification before sending keys
-                Thread.Sleep(40);
+                Thread.Sleep(50);
 
                 SendCtrlV();
-
-                ThreadPool.QueueUserWorkItem((state) =>
-                {
-                    // Target apps can take 200-500ms to pull the delayed clipboard data; restore too early and the paste is empty
-                    Thread.Sleep(1500);
-                    try
-                    {
-                        if (_msgWindow != null && _msgWindow.IsHandleCreated)
-                        {
-                            _msgWindow.BeginInvoke((Action)(() =>
-                            {
-                                _pendingPasteText = null;
-                                if (previousData != null)
-                                {
-                                    try { Clipboard.SetDataObject(previousData, true); } catch { }
-                                }
-                            }));
-                        }
-                    }
-                    catch { }
-                });
 
                 return true;
             }
@@ -1223,40 +1281,60 @@ namespace IndicFlowNativeHelper
 
         private static void SendCtrlV()
         {
-            // Ensure Alt key is up so Ctrl+V is not interpreted as Alt+Ctrl+V
-            if ((GetAsyncKeyState(VK_MENU) & 0x8000) != 0)
-            {
-                INPUT altUp = new INPUT();
-                altUp.type = INPUT_KEYBOARD;
-                altUp.mkhi.ki.wVk = VK_MENU;
-                altUp.mkhi.ki.dwFlags = KEYEVENTF_KEYUP;
-                SendInput(1, new INPUT[] { altUp }, Marshal.SizeOf(typeof(INPUT)));
-                Thread.Sleep(10);
-            }
-
-            INPUT[] inputs = new INPUT[4];
+            // Ensure all modifier keys are released before synthesizing Ctrl+V
+            ReleaseModifier(VK_MENU);
+            ReleaseModifier(VK_SHIFT);
+            ReleaseModifier(VK_LWIN);
+            ReleaseModifier(VK_RWIN);
+            Thread.Sleep(20);
 
             // 1. Ctrl Down
-            inputs[0].type = INPUT_KEYBOARD;
-            inputs[0].mkhi.ki.wVk = VK_CONTROL;
-            inputs[0].mkhi.ki.dwFlags = 0;
+            INPUT ctrlDown = new INPUT();
+            ctrlDown.type = INPUT_KEYBOARD;
+            ctrlDown.mkhi.ki.wVk = VK_CONTROL;
+            ctrlDown.mkhi.ki.wScan = (ushort)MapVirtualKey(VK_CONTROL, 0);
+            ctrlDown.mkhi.ki.dwFlags = 0;
+            SendInput(1, new INPUT[] { ctrlDown }, Marshal.SizeOf(typeof(INPUT)));
+            Thread.Sleep(20);
 
             // 2. V Down
-            inputs[1].type = INPUT_KEYBOARD;
-            inputs[1].mkhi.ki.wVk = VK_V;
-            inputs[1].mkhi.ki.dwFlags = 0;
+            INPUT vDown = new INPUT();
+            vDown.type = INPUT_KEYBOARD;
+            vDown.mkhi.ki.wVk = VK_V;
+            vDown.mkhi.ki.wScan = (ushort)MapVirtualKey(VK_V, 0);
+            vDown.mkhi.ki.dwFlags = 0;
+            SendInput(1, new INPUT[] { vDown }, Marshal.SizeOf(typeof(INPUT)));
+            Thread.Sleep(30);
 
             // 3. V Up
-            inputs[2].type = INPUT_KEYBOARD;
-            inputs[2].mkhi.ki.wVk = VK_V;
-            inputs[2].mkhi.ki.dwFlags = KEYEVENTF_KEYUP;
+            INPUT vUp = new INPUT();
+            vUp.type = INPUT_KEYBOARD;
+            vUp.mkhi.ki.wVk = VK_V;
+            vUp.mkhi.ki.wScan = (ushort)MapVirtualKey(VK_V, 0);
+            vUp.mkhi.ki.dwFlags = KEYEVENTF_KEYUP;
+            SendInput(1, new INPUT[] { vUp }, Marshal.SizeOf(typeof(INPUT)));
+            Thread.Sleep(20);
 
             // 4. Ctrl Up
-            inputs[3].type = INPUT_KEYBOARD;
-            inputs[3].mkhi.ki.wVk = VK_CONTROL;
-            inputs[3].mkhi.ki.dwFlags = KEYEVENTF_KEYUP;
+            INPUT ctrlUp = new INPUT();
+            ctrlUp.type = INPUT_KEYBOARD;
+            ctrlUp.mkhi.ki.wVk = VK_CONTROL;
+            ctrlUp.mkhi.ki.wScan = (ushort)MapVirtualKey(VK_CONTROL, 0);
+            ctrlUp.mkhi.ki.dwFlags = KEYEVENTF_KEYUP;
+            SendInput(1, new INPUT[] { ctrlUp }, Marshal.SizeOf(typeof(INPUT)));
+        }
 
-            SendInput((uint)inputs.Length, inputs, Marshal.SizeOf(typeof(INPUT)));
+        private static void ReleaseModifier(ushort vk)
+        {
+            if ((GetAsyncKeyState(vk) & 0x8000) != 0)
+            {
+                INPUT up = new INPUT();
+                up.type = INPUT_KEYBOARD;
+                up.mkhi.ki.wVk = vk;
+                up.mkhi.ki.wScan = (ushort)MapVirtualKey(vk, 0);
+                up.mkhi.ki.dwFlags = KEYEVENTF_KEYUP;
+                SendInput(1, new INPUT[] { up }, Marshal.SizeOf(typeof(INPUT)));
+            }
         }
 
         // -------------------------------------------------------------

@@ -269,14 +269,14 @@
 
             <div class="setting-item card">
               <div class="setting-info">
-                <h4>Spoken Language / Voice Mode</h4>
-                <p>Detect any voice automatically or select specific native language</p>
+                <h4>Spoken Language</h4>
+                <p>Select target language for high-accuracy native dictation</p>
               </div>
               <div class="setting-control">
                 <select id="setting-gnaniLanguage" class="flow-select">
-                  <option value="indic-auto">Universal Auto-Detect (Auto-detects Spoken Voice: English, Telugu, Hindi, etc.)</option>
-                  <option value="te-IN">Telugu (te-IN) - తెలుగు</option>
+                  <option value="en-IN" selected>English (en-IN / Global)</option>
                   <option value="hi-IN">Hindi (hi-IN) - हिन्दी</option>
+                  <option value="te-IN">Telugu (te-IN) - తెలుగు</option>
                   <option value="ta-IN">Tamil (ta-IN) - தமிழ்</option>
                   <option value="kn-IN">Kannada (kn-IN) - ಕನ್ನಡ</option>
                   <option value="mr-IN">Marathi (mr-IN) - मराठी</option>
@@ -284,7 +284,6 @@
                   <option value="gu-IN">Gujarati (gu-IN) - ગુજરાતી</option>
                   <option value="pa-IN">Punjabi (pa-IN) - ਪੰਜਾਬੀ</option>
                   <option value="ml-IN">Malayalam (ml-IN) - മലയാളം</option>
-                  <option value="en-IN">English (en-IN / Global)</option>
                 </select>
               </div>
             </div>
@@ -292,16 +291,13 @@
             <div class="setting-item card">
               <div class="setting-info">
                 <h4>Speech-to-Text Model Engine</h4>
-                <p>Universal multi-lingual AI or dedicated Indic voice engine</p>
+                <p>Selected high-speed voice transcription model</p>
               </div>
               <div class="setting-control">
                 <select id="setting-model" class="flow-select">
-                  <option value="gemini-flash-lite-latest">Google Gemini (Universal Auto-Detect: All Global & Indic Voices)</option>
-                  <option value="prisma-v3.0" selected>Gnani AI Prisma v3.0 (Indic Voice AI: Telugu, Hindi, 11+ Languages)</option>
+                  <option value="prisma-v3.0" selected>Gnani AI Prisma v3.0 (Indic Voice AI - High Accuracy)</option>
                   <option value="prisma-v2.5">Gnani AI Prisma v2.5 (Fast Indic)</option>
-                  <option value="groq-turbo">Groq Whisper Large (Ultra-Fast 99+ Languages Universal STT)</option>
-                  <option value="gemini-3.5-flash">Google Gemini 3.5 Flash</option>
-                  <option value="local-offline">Local Engine (On-Device Offline STT)</option>
+                  <option value="gemini-flash-lite-latest">Google Gemini Flash Lite (Multilingual STT)</option>
                 </select>
               </div>
             </div>

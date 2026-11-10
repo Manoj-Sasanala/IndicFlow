@@ -67,7 +67,7 @@ class STTService extends EventEmitter {
 
     this.gnaniApiKey = config.gnaniApiKey || process.env.GNANI_API_KEY || '';
     this.gnaniModel = config.gnaniModel || process.env.GNANI_MODEL || 'prisma-v3.0';
-    this.gnaniLanguage = config.gnaniLanguage || process.env.GNANI_LANGUAGE || 'indic-auto';
+    this.gnaniLanguage = config.gnaniLanguage || process.env.GNANI_LANGUAGE || 'en-IN';
     this.gnaniEndpoint = config.gnaniEndpoint || process.env.GNANI_ENDPOINT || 'https://api.vachana.ai/stt/v3';
 
     this.groqApiKey = config.groqApiKey || process.env.GROQ_API_KEY || '';
@@ -332,10 +332,10 @@ class STTService extends EventEmitter {
    * @private
    */
   _normalizeGnaniLanguageCode(lang) {
-    if (!lang) return 'indic-auto';
+    if (!lang) return 'en-IN';
     const clean = String(lang).trim();
     const lower = clean.toLowerCase();
-    if (lower === 'indic-auto' || lower === 'auto') return 'indic-auto';
+    if (lower === 'indic-auto' || lower === 'auto') return 'en-IN';
     const map = {
       'hi': 'hi-IN', 'hi-in': 'hi-IN',
       'te': 'te-IN', 'te-in': 'te-IN',

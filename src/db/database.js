@@ -106,7 +106,7 @@ class FlowDatabase {
       ['primaryProvider', 'gnani_prisma'],
       ['gnaniApiKey', process.env.GNANI_API_KEY || 'vach_1ytE2CY5X2EAmc5L3wuTWkGhJ68RnojDdCYDsXvUVyXdJGxiJ5yz4hMbZS5gE7RdnROeYrso6PoFnyQ5URmPzx6pEYdRMUTL_428d9096381302fb25361cdda2d6b97e'],
       ['gnaniModel', 'prisma-v3.0'],
-      ['gnaniLanguage', 'indic-auto'],
+      ['gnaniLanguage', 'en-IN'],
       ['geminiApiKey', process.env.GEMINI_API_KEY || ''],
       ['geminiModel', 'gemini-flash-lite-latest'],
       ['groqApiKey', process.env.GROQ_API_KEY || ''],
@@ -128,6 +128,10 @@ class FlowDatabase {
         insertStmt.run(key, val);
       }
     }
+
+    try {
+      this.db.prepare("UPDATE Settings SET value = 'en-IN' WHERE key = 'gnaniLanguage' AND (value = 'indic-auto' OR value = 'auto')").run();
+    } catch {}
   }
 
   // --- History Operations ---

@@ -301,6 +301,16 @@ class DictationCoordinator extends EventEmitter {
       }
     }
 
+    // Sanitize any accidental mojibake sequences
+    if (finalText && typeof finalText === 'string' && /[\u00C0-\u00FF]/.test(finalText)) {
+      try {
+        const repaired = Buffer.from(finalText, 'latin1').toString('utf8');
+        if (!repaired.includes('\uFFFD')) {
+          finalText = repaired;
+        }
+      } catch {}
+    }
+
     // Step 4: Inject text via Helper's direct clipboard injection
     let pasteOutcome = false;
     try {

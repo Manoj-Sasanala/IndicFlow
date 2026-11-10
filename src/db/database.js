@@ -104,7 +104,7 @@ class FlowDatabase {
       ['activationMode', 'push_to_talk'],
       ['model', 'prisma-v3.0'],
       ['primaryProvider', 'gnani_prisma'],
-      ['gnaniApiKey', process.env.GNANI_API_KEY || 'vach_1ytE2CY5X2EAmc5L3wuTWkGhJ68RnojDdCYDsXvUVyXdJGxiJ5yz4hMbZS5gE7RdnROeYrso6PoFnyQ5URmPzx6pEYdRMUTL_428d9096381302fb25361cdda2d6b97e'],
+      ['gnaniApiKey', process.env.GNANI_API_KEY || ''],
       ['gnaniModel', 'prisma-v3.0'],
       ['gnaniLanguage', 'en-IN'],
       ['geminiApiKey', process.env.GEMINI_API_KEY || ''],

@@ -7,7 +7,11 @@ console.log('       GNANI AI PRISMA STT LIVE API VERIFICATION');
 console.log('======================================================\n');
 
 async function run() {
-  const apiKey = process.env.GNANI_API_KEY || 'vach_1ytE2CY5X2EAmc5L3wuTWkGhJ68RnojDdCYDsXvUVyXdJGxiJ5yz4hMbZS5gE7RdnROeYrso6PoFnyQ5URmPzx6pEYdRMUTL_428d9096381302fb25361cdda2d6b97e';
+  const apiKey = process.env.GNANI_API_KEY || '';
+  if (!apiKey) {
+    console.error('[Gnani Test] GNANI_API_KEY is not set. Export it before running this test.');
+    process.exit(1);
+  }
   console.log(`[Gnani Test] Target Endpoint: https://api.vachana.ai/stt/v3`);
   console.log(`[Gnani Test] API Key Prefix : ${apiKey.substring(0, 15)}...`);
   console.log(`[Gnani Test] Model         : prisma-v3.0`);

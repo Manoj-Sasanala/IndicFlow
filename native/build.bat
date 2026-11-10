@@ -1,7 +1,7 @@
 @echo off
 set CSC=C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe
-set OUT="F:\wisper flow rea\flow-app\native\FlowHelper.exe"
-set SRC="F:\wisper flow rea\flow-app\native\FlowHelper.cs"
+set OUT="%~dp0FlowHelper.exe"
+set SRC="%~dp0FlowHelper.cs"
 set REF1="C:\Windows\Microsoft.NET\Framework64\v4.0.30319\WPF\UIAutomationClient.dll"
 set REF2="C:\Windows\Microsoft.NET\Framework64\v4.0.30319\WPF\UIAutomationTypes.dll"
 set REF3="System.Windows.Forms.dll"

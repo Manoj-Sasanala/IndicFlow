@@ -2,7 +2,7 @@
 'use strict';
 
 /**
- * Wispr Flow Main Hub & Notes Controller
+ * IndicFlow Main Hub & Notes Controller
  */
 
 // --- UI Elements ---

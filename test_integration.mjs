@@ -16,7 +16,7 @@ const {
 
 async function runEndToEndIntegration() {
   console.log('========================================================================');
-  console.log('      WISPR FLOW END-TO-END PIPELINE INTEGRATION VERIFICATION');
+  console.log('      INDICFLOW END-TO-END PIPELINE INTEGRATION VERIFICATION');
   console.log('========================================================================\n');
 
   const db = new FlowDatabase(':memory:');
@@ -99,20 +99,20 @@ async function runEndToEndIntegration() {
 
   await coordinator.startDictation();
   // Spoken command to turn thoughts into bullet points
-  await coordinator.stopDictation('bullet points: complete reverse engineering, extract electron bundle, compile native helper');
+  await coordinator.stopDictation('bullet points: design system architecture, implement voice pipeline, compile native helper');
   
   history = db.getHistory(1);
   console.log(`  ✔ Spoken Command: "${history[0].asrText}"`);
   console.log(`  ✔ Executed Output:\n${history[0].pastedText.split('\n').map(l => '      ' + l).join('\n')}`);
   const lowerPasted = history[0].pastedText.toLowerCase();
-  assert(lowerPasted.includes('- complete reverse engineering'), 'Bullet point 1 must be present');
-  assert(lowerPasted.includes('- extract electron bundle'), 'Bullet point 2 must be present');
+  assert(lowerPasted.includes('- design system architecture'), 'Bullet point 1 must be present');
+  assert(lowerPasted.includes('- implement voice pipeline'), 'Bullet point 2 must be present');
   assert(lowerPasted.includes('- compile native helper'), 'Bullet point 3 must be present');
 
   await new Promise(r => setTimeout(r, 1050));
 
   console.log('\n▶ Step 6: Testing Custom Dictionary Expansion & Jargon...');
-  db.addDictionaryWord('Wisper Flow', 'Wispr Flow');
+  db.addDictionaryWord('Indic', 'IndicFlow');
   db.addDictionaryWord('WIP', 'Work-In-Progress');
 
   coordinator.activeContext = {
@@ -123,12 +123,12 @@ async function runEndToEndIntegration() {
   };
 
   await coordinator.startDictation();
-  await coordinator.stopDictation('The new Wisper Flow feature is currently WIP for tomorrow release.');
+  await coordinator.stopDictation('The new Indic feature is currently WIP for tomorrow release.');
   
   history = db.getHistory(1);
   console.log(`  ✔ Raw ASR:        "${history[0].asrText}"`);
   console.log(`  ✔ With Dict:      "${history[0].pastedText}"`);
-  assert(history[0].pastedText.includes('Wispr Flow'), 'Wisper Flow dictionary replacement must apply');
+  assert(history[0].pastedText.includes('IndicFlow'), 'IndicFlow dictionary replacement must apply');
   assert(history[0].pastedText.includes('Work-In-Progress'), 'WIP acronym replacement must apply');
 
   await new Promise(r => setTimeout(r, 1050));

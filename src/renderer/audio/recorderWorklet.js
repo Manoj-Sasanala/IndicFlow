@@ -3,7 +3,7 @@
 
 /**
  * AudioWorkletProcessor for high-fidelity 16kHz audio capture & chunking
- * Modeled on the Wispr Flow reverse-engineered audio recording architecture.
+ * Low-latency Web Audio Worklet for IndicFlow voice streaming.
  * Emits uniform 640-sample (40ms) PCM audio packets on a high-priority audio thread.
  */
 

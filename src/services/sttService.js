@@ -27,7 +27,7 @@ try {
 }
 
 /**
- * Speech Recognition Providers supported by Wispr Flow / IndicFlow
+ * Speech Recognition Providers supported by IndicFlow
  * @enum {string}
  */
 const STTProvider = {
@@ -40,7 +40,7 @@ const STTProvider = {
 };
 
 /**
- * Flexible Speech Recognition Provider for Wispr Flow / IndicFlow
+ * Flexible Speech Recognition Provider for IndicFlow
  * Supports Gnani AI Prisma STT (Indian languages & Hinglish), Groq Whisper, OpenAI Whisper,
  * Gemini audio, and Mock / Offline fallback.
  */
@@ -85,7 +85,7 @@ class STTService extends EventEmitter {
     // Mock transcript registry for deterministic testing
     /** @type {Map<string, string>} */
     this.mockResponses = new Map();
-    this.defaultMockText = 'Hello world, this is a test transcription from Wispr Flow.';
+    this.defaultMockText = 'Hello world, this is a test transcription from IndicFlow.';
   }
 
   /**
@@ -272,7 +272,7 @@ class STTService extends EventEmitter {
     list.push(primary);
 
     if (this.enableFallback) {
-      const hasMockCustomization = this.defaultMockText !== 'Hello world, this is a test transcription from Wispr Flow.' || this.mockResponses.size > 0;
+      const hasMockCustomization = this.defaultMockText !== 'Hello world, this is a test transcription from IndicFlow.' || this.mockResponses.size > 0;
       const isTestEnv = allowMock || 
                         process.env.NODE_ENV === 'test' || 
                         primary === STTProvider.MOCK_OFFLINE ||
@@ -636,7 +636,7 @@ class STTService extends EventEmitter {
         args.push('-l', options.language);
       }
 
-      const technicalPrompt = options?.prompt || 'Glossary: nodes, edges, graph, REA, Electron, C#, Caret, code, Wispr Flow.';
+      const technicalPrompt = options?.prompt || 'Glossary: nodes, edges, graph, Electron, Caret, code, IndicFlow.';
       args.push('--prompt', technicalPrompt);
 
       const result = await new Promise((resolve, reject) => {
@@ -678,7 +678,7 @@ class STTService extends EventEmitter {
         const audioBlob = new Blob([wavBuffer], { type: 'audio/wav' });
         formData.append('file', audioBlob, 'audio.wav');
         formData.append('model', 'whisper');
-        const technicalPrompt = options?.prompt || 'Glossary: nodes, edges, graph, REA, Electron, C#, Caret, code, Wispr Flow.';
+        const technicalPrompt = options?.prompt || 'Glossary: nodes, edges, graph, Electron, Caret, code, IndicFlow.';
         formData.append('prompt', technicalPrompt);
 
         const controller = new AbortController();

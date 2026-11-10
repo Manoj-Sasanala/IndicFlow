@@ -3,7 +3,7 @@
 
 /**
  * AudioEngine - Modular Client Audio Capture, VAD & RIFF/WAV Construction
- * Implements the reverse-engineered Wispr Flow audio recording architecture.
+ * High-performance Web Audio recording architecture for IndicFlow.
  */
 
 class AudioEngine {
@@ -344,7 +344,7 @@ class AudioEngine {
       return null;
     }
 
-    // Apply Speech Trimming (Wispr Flow REA algorithm: 2-frame margin around speech)
+    // Apply Speech Trimming (Dynamic speech edge trimming algorithm)
     let startChunk = 0;
     let endChunk = this.pcmChunks.length - 1;
 

@@ -1,7 +1,7 @@
-# Recreate desktop shortcut with fresh icon filename and notify shell
-$iconPath = "F:\wisper flow rea\flow-app\assets\wispr_flow.ico"
-$targetBat = "F:\wisper flow rea\start-flow.bat"
-$workDir = "F:\wisper flow rea"
+# Recreate desktop shortcut for IndicFlow
+$rootDir = (Get-Item $PSScriptRoot).Parent.FullName
+$iconPath = Join-Path $rootDir "assets\icon.ico"
+$workDir = $rootDir
 
 $desktops = @(
     [Environment]::GetFolderPath("Desktop"),
@@ -13,24 +13,22 @@ $WshShell = New-Object -ComObject WScript.Shell
 
 foreach ($desk in $desktops) {
     if (Test-Path $desk) {
-        $shortcutPath = Join-Path $desk "Wispr Flow.lnk"
+        $shortcutPath = Join-Path $desk "IndicFlow.lnk"
         
-        # Remove old shortcut to clear Windows Explorer cache reference
         if (Test-Path $shortcutPath) {
             Remove-Item $shortcutPath -Force -ErrorAction SilentlyContinue
         }
 
-        # Create fresh shortcut with new icon path
         $shortcut = $WshShell.CreateShortcut($shortcutPath)
-        $shortcut.TargetPath = $targetBat
+        $shortcut.TargetPath = "cmd.exe"
+        $shortcut.Arguments = "/c npm start"
         $shortcut.WorkingDirectory = $workDir
         $shortcut.IconLocation = "$iconPath,0"
-        $shortcut.Description = "Wispr Flow Voice Dictation"
+        $shortcut.Description = "IndicFlow Voice Dictation & AI Companion"
         $shortcut.WindowStyle = 7
         $shortcut.Save()
 
-        Write-Host "Created fresh shortcut at: $shortcutPath"
-        Write-Host "  Icon set to: $iconPath,0"
+        Write-Host "Created IndicFlow shortcut at: $shortcutPath"
     }
 }
 

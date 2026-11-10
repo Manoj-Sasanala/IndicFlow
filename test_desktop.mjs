@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 console.log('========================================================');
-console.log('   WISPR FLOW DESKTOP CLIENT SUITE - VERIFICATION TEST   ');
+console.log('   INDICFLOW DESKTOP CLIENT SUITE - VERIFICATION TEST   ');
 console.log('========================================================\n');
 
 let testsPassed = 0;
@@ -178,7 +178,7 @@ async function runTests() {
     assert(textBoxInfo.caretRect && textBoxInfo.caretRect.x === 600, 'GetTextBoxInfo returned valid caretRect');
 
     // Test PasteText RPC
-    const pasteRes = await supervisor.pasteText('Hello from Wispr Flow!');
+    const pasteRes = await supervisor.pasteText('Hello from IndicFlow!');
     assert(pasteRes && pasteRes.pasted === true, 'PasteText RPC request / response succeeded');
 
     // Test Helper Event Emission

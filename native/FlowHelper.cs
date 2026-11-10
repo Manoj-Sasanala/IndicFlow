@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Automation;
 using System.Windows.Forms;
 
-namespace WisprFlowNativeHelper
+namespace IndicFlowNativeHelper
 {
     internal static class Program
     {

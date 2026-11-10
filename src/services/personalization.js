@@ -146,8 +146,8 @@ class PersonalizationEngine {
 
   /**
    * Adds or updates a dictionary replacement entry.
-   * @param {string} phrase - Trigger phrase/word (e.g. "k8s", "pr", "wisper")
-   * @param {string} replacement - Target replacement (e.g. "Kubernetes", "PR", "Wispr Flow")
+   * @param {string} phrase - Trigger phrase/word (e.g. "k8s", "pr", "indic")
+   * @param {string} replacement - Target replacement (e.g. "Kubernetes", "PR", "IndicFlow")
    * @returns {{ id: string, phrase: string, replacement: string, frequencyUsed: number }}
    */
   addWord(phrase, replacement) {

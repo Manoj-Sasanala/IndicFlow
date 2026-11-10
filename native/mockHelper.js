@@ -40,7 +40,7 @@ rl.on('line', (line) => {
           success: true,
           result: {
             app: currentApp,
-            windowTitle: 'Wispr Flow Dev — Visual Studio Code',
+            windowTitle: 'IndicFlow Dev — Visual Studio Code',
             url: null,
             textboxContents: 'Writing code with AI voice-typing... ',
             caretRect: simulatedCaret,

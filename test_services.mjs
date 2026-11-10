@@ -55,7 +55,7 @@ async function test(name, fn) {
 }
 
 console.log('\n======================================================');
-console.log('       WISPR FLOW AI SERVICES TEST SUITE');
+console.log('       INDICFLOW AI SERVICES TEST SUITE');
 console.log('======================================================\n');
 
 // -----------------------------------------------------------
@@ -349,7 +349,7 @@ await test('Intent Classification: Literal Dictation', async () => {
 });
 
 await test('Intent Classification: Translation Command', async () => {
-  const res = classifier.classify('Wispr, translate to French: I will see you tomorrow at lunch');
+  const res = classifier.classify('Flow, translate to French: I will see you tomorrow at lunch');
   assert.equal(res.isCommand, true);
   assert.equal(res.type, CommandType.TRANSLATE);
   assert.equal(res.targetLanguage.toLowerCase(), 'french');
@@ -445,12 +445,12 @@ const personalization = new PersonalizationEngine({
 await test('Dictionary Replacement: Custom Acronyms & Jargon', async () => {
   personalization.addWord('k8s', 'Kubernetes');
   personalization.addWord('pr', 'PR');
-  personalization.addWord('wisper', 'Wispr Flow');
+  personalization.addWord('indic', 'IndicFlow');
 
-  const raw = 'I opened a new pr for k8s using wisper today.';
+  const raw = 'I opened a new pr for k8s using indic today.';
   const replaced = personalization.applyDictionary(raw);
 
-  assert.equal(replaced, 'I opened a new PR for Kubernetes using Wispr Flow today.');
+  assert.equal(replaced, 'I opened a new PR for Kubernetes using IndicFlow today.');
 
   // Verify word boundaries: "problem" should NOT be replaced by PR
   const boundaryCheck = personalization.applyDictionary('That is a big problem.');
@@ -555,6 +555,6 @@ console.log('======================================================\n');
 if (failedTests > 0) {
   process.exit(1);
 } else {
-  console.log('\x1b[32m✔ All Wispr Flow AI & Audio Services passed successfully!\x1b[0m\n');
+  console.log('\x1b[32m✔ All IndicFlow AI & Audio Services passed successfully!\x1b[0m\n');
   process.exit(0);
 }

@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 const helperExePath = path.join(__dirname, 'FlowHelper.exe');
 
 console.log('='.repeat(72));
-console.log('       WISPR FLOW NATIVE HELPER AUTOMATED TEST SUITE');
+console.log('       INDICFLOW NATIVE HELPER AUTOMATED TEST SUITE');
 console.log('       Target:', helperExePath);
 console.log('='.repeat(72));
 
@@ -191,7 +191,7 @@ async function runTests() {
 
   // 7. Synthetic Paste Injection (Ctrl+V) & Delayed Clipboard Rendering
   console.log('\n>>> Step 8: Verifying PasteText Command (Delayed Rendering / SendInput)...');
-  const pasteRes = await sendCommand('PasteText', { text: 'Wispr Flow native paste verification test' });
+  const pasteRes = await sendCommand('PasteText', { text: 'IndicFlow native paste verification test' });
   assert(pasteRes.success === true, 'PasteText returned success: true');
   assert(pasteRes.event === 'PasteOutcome', 'PasteText returned event: "PasteOutcome"');
 

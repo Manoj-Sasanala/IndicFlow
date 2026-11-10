@@ -67,7 +67,7 @@ class WindowManager {
       minWidth: 820,
       minHeight: 520,
       frame: true,
-      title: 'Wispr Flow',
+      title: 'IndicFlow',
       show: true,
       center: true,
       backgroundColor: '#0f1015',

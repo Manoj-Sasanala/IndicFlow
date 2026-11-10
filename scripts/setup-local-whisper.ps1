@@ -1,5 +1,5 @@
-# ==============================================================================
-# Setup Local Whisper (whisper.cpp) for Wispr Flow Replica
+﻿# ==============================================================================
+# Setup Local Whisper (whisper.cpp) for IndicFlow
 # Downloads pre-built Windows x64 binary and compact ggml-base.en model (~140MB)
 # ==============================================================================
 
@@ -9,7 +9,7 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $appDir = Split-Path -Parent $scriptDir
 $whisperDir = Join-Path $appDir "native\whisper"
 
-Write-Host ">>> Wispr Flow Local Engine Setup" -ForegroundColor Cyan
+Write-Host ">>> IndicFlow Local Engine Setup" -ForegroundColor Cyan
 Write-Host "Target directory: $whisperDir" -ForegroundColor Gray
 
 if (-not (Test-Path $whisperDir)) {

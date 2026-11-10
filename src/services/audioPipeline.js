@@ -2,7 +2,7 @@
 'use strict';
 
 /**
- * Audio Streaming & Processing Pipeline for Wispr Flow
+ * Audio Streaming & Processing Pipeline for IndicFlow
  * - 16kHz 16-bit Mono PCM chunking & buffering
  * - Fast downsampling (e.g. 48kHz/44.1kHz -> 16kHz)
  * - RIFF/WAV binary header construction for Whisper APIs

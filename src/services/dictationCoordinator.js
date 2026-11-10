@@ -306,7 +306,7 @@ class DictationCoordinator extends EventEmitter {
       isCommand: classification.isCommand
     });
 
-    // Step 7: Auto-hide pill after 1000ms (as specified in Wispr Flow specs)
+    // Step 7: Auto-hide pill after 1000ms
     this.successHideTimer = setTimeout(() => {
       this._setState('idle');
       if (this.windowManager) {
@@ -334,7 +334,7 @@ class DictationCoordinator extends EventEmitter {
       "Let's schedule a design review meeting for tomorrow at 2 PM.",
       "Fixed the IPC reconnection watchdog timer in the Electron main supervisor.",
       "The fast streaming ASR pipeline handles real-time audio with minimal latency.",
-      "Wispr Flow combines UIAutomation caret tracking with delayed clipboard injection.",
+      "IndicFlow combines UIAutomation caret tracking with delayed clipboard injection.",
       "Added support for custom user dictionary expansions and acronyms."
     ];
     return samples[Math.floor(Math.random() * samples.length)];

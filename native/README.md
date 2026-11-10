@@ -1,6 +1,6 @@
-# Wispr Flow Native Windows Helper (FlowHelper.exe)
+# IndicFlow Native Windows Helper (FlowHelper.exe)
 
-The 64-bit native Windows helper executable for Wispr Flow dictation and context-aware voice typing. Built in high-performance C# compiled via Microsoft .NET Framework 4.8 `csc.exe`.
+The 64-bit native Windows helper executable for IndicFlow dictation and context-aware voice typing. Built in high-performance C# compiled via Microsoft .NET Framework 4.8 `csc.exe`.
 
 ---
 
@@ -126,7 +126,7 @@ Exits the process cleanly with code `0`.
 Compile using Microsoft .NET Framework 4.8 64-bit C# Compiler:
 
 ```bat
-C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe /target:exe /platform:x64 /out:"F:\wisper flow rea\flow-app\native\FlowHelper.exe" /r:"C:\Windows\Microsoft.NET\Framework64\v4.0.30319\WPF\UIAutomationClient.dll" /r:"C:\Windows\Microsoft.NET\Framework64\v4.0.30319\WPF\UIAutomationTypes.dll" /r:"System.Windows.Forms.dll" "F:\wisper flow rea\flow-app\native\FlowHelper.cs"
+C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe /target:exe /platform:x64 /out:"FlowHelper.exe" /r:"C:\Windows\Microsoft.NET\Framework64\v4.0.30319\WPF\UIAutomationClient.dll" /r:"C:\Windows\Microsoft.NET\Framework64\v4.0.30319\WPF\UIAutomationTypes.dll" /r:"System.Windows.Forms.dll" "FlowHelper.cs"
 ```
 
 Or run:

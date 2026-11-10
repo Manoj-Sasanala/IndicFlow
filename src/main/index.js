@@ -153,7 +153,7 @@ function initTray() {
   try {
     const icon = createTrayIcon();
     tray = new Tray(icon);
-    tray.setToolTip('Wispr Flow');
+    tray.setToolTip('IndicFlow');
 
     const contextMenu = Menu.buildFromTemplate([
       {

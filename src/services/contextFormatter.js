@@ -208,7 +208,7 @@ class ContextFormatter {
   }
 
   /**
-   * Rule-based context formatting engine (Wispr Flow Heuristics).
+   * Rule-based context formatting engine (IndicFlow Heuristics).
    * @private
    */
   _formatWithHeuristics(rawText, appCategory, context) {
@@ -495,7 +495,7 @@ class ContextFormatter {
   }
 
   /**
-   * LLM Formatter using Wispr Flow's prompt architecture.
+   * LLM Formatter using IndicFlow's prompt architecture.
    * @private
    */
   async _formatWithLlm(rawText, appCategory, context) {
@@ -517,7 +517,7 @@ class ContextFormatter {
    * @private
    */
   _buildPrompt(rawText, appCategory, context) {
-    return `You are an expert voice-typing text formatter for Wispr Flow.
+    return `You are an expert voice-typing text formatter for IndicFlow.
 Your task is to convert raw spoken speech into perfectly punctuated, capitalized, and formatted text that fits naturally into the user's active application context.
 
 <ACTIVE_APPLICATION>

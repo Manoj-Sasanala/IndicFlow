@@ -23,7 +23,7 @@ const CommandType = {
  * Short-circuit prefixes that explicitly force command evaluation
  */
 const COMMAND_PREFIXES = [
-  /^(?:wispr|flow|hey\s+flow|command)\s*[:,-]?\s*/i,
+  /^(?:indic|flow|hey\s+flow|command)\s*[:,-]?\s*/i,
   /^(?:please\s+)?(?:action|instruct)\s*[:,-]?\s*/i
 ];
 
@@ -71,7 +71,7 @@ class CommandClassifier {
     const hasSelection = Boolean(context.hasSelectedText && context.selectedText && context.selectedText.trim());
     const selectedText = hasSelection ? context.selectedText.trim() : '';
 
-    // Strip optional short-circuit trigger prefix (e.g. "Wispr, translate to French")
+    // Strip optional short-circuit trigger prefix (e.g. "Indic, translate to French")
     let cleanText = raw;
     let hadPrefix = false;
     for (const prefix of COMMAND_PREFIXES) {

@@ -283,9 +283,15 @@ class DictationCoordinator extends EventEmitter {
       }
     }
 
-    // Step 4: Inject text via Helper's delayed clipboard injection
+    // Step 4: Inject text via Helper's direct clipboard injection
     let pasteOutcome = false;
     try {
+      // Pre-populate Electron native clipboard
+      try {
+        const { clipboard } = require('electron');
+        clipboard.writeText(finalText);
+      } catch {}
+
       await this.helper.pasteText(finalText);
       pasteOutcome = true;
     } catch (err) {

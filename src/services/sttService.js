@@ -551,15 +551,15 @@ class STTService extends EventEmitter {
       langInstruction = 'Transcribe the spoken audio in Marathi Devanagari script.';
     } else if (lang.startsWith('bn')) {
       langInstruction = 'Transcribe the spoken audio in Bengali script.';
-    } else if (lang === 'indic-auto') {
-      langInstruction = 'Transcribe the spoken audio in the native script of the spoken words (e.g. Hindi in Devanagari, Telugu in Telugu script, or English in Latin script).';
+    } else if (lang === 'indic-auto' || lang === 'auto') {
+      langInstruction = 'Transcribe the spoken audio in the native script of the spoken words (e.g. Telugu in Telugu script, Hindi in Devanagari script, Tamil in Tamil script, English in Latin script, etc.). Automatically detect the spoken language.';
     } else {
       langInstruction = 'Transcribe the spoken audio verbatim in the spoken language.';
     }
     const prompt = `${langInstruction} Do NOT translate into another language. If there is no discernible speech or only silence/background noise, return an empty string. Return ONLY the verbatim transcribed text without quotes, markdown formatting, or commentary.`;
 
-    const primaryModel = this.geminiModel || 'gemini-3.5-flash';
-    const modelsToTry = [primaryModel, 'gemini-3.5-flash', 'gemini-3.5-flash-lite'].filter((v, i, a) => a.indexOf(v) === i);
+    const primaryModel = this.geminiModel || 'gemini-flash-lite-latest';
+    const modelsToTry = [primaryModel, 'gemini-flash-lite-latest', 'gemini-3.5-flash', 'gemini-3.5-flash-lite'].filter((v, i, a) => a.indexOf(v) === i);
     let lastError = null;
 
     for (const model of modelsToTry) {

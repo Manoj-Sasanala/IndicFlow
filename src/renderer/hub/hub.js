@@ -503,7 +503,12 @@ async function loadSettings() {
       applyTheme(activeTheme);
       if (settings.hotkey && settingHotkey) settingHotkey.value = settings.hotkey;
       if (settings.activationMode && settingActivationMode) settingActivationMode.value = settings.activationMode;
-      if (settings.model && settingModel) settingModel.value = settings.model;
+      if (settings.model && settingModel) {
+        settingModel.value = settings.model;
+        if (!settingModel.value && settings.model.startsWith('gemini')) {
+          settingModel.value = 'gemini-flash-lite-latest';
+        }
+      }
       if (settings.caretTracking && settingCaretTracking) settingCaretTracking.checked = settings.caretTracking === 'true';
       if (settingGnaniApiKey) settingGnaniApiKey.value = settings.gnaniApiKey || '';
       if (settingGnaniLanguage) {

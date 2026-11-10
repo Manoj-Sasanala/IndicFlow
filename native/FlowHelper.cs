@@ -168,6 +168,9 @@ namespace IndicFlowNativeHelper
         private static extern IntPtr GetForegroundWindow();
 
         [DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
         private static extern IntPtr GetShellWindow();
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
@@ -243,6 +246,7 @@ namespace IndicFlowNativeHelper
 
         private static string _lastFocusApp = "";
         private static string _lastFocusTitle = "";
+        private static IntPtr _lastTargetHwnd = IntPtr.Zero;
 
         private static volatile string _pendingPasteText = null;
         private static readonly object _writeLock = new object();
@@ -824,6 +828,13 @@ namespace IndicFlowNativeHelper
                 IntPtr hwnd = GetForegroundWindow();
                 if (hwnd == IntPtr.Zero) return;
 
+                uint pid;
+                GetWindowThreadProcessId(hwnd, out pid);
+                if (pid != (uint)Process.GetCurrentProcess().Id)
+                {
+                    _lastTargetHwnd = hwnd;
+                }
+
                 string app = GetProcessExecutableSafe(hwnd);
                 string title = GetWindowTitleSafe(hwnd);
 
@@ -1092,13 +1103,21 @@ namespace IndicFlowNativeHelper
             }
             catch { }
 
-            bool clipboardSet = false;
             try
             {
+                // Ensure target window is in the foreground
+                IntPtr currentForeground = GetForegroundWindow();
+                if (_lastTargetHwnd != IntPtr.Zero && _lastTargetHwnd != currentForeground)
+                {
+                    SetForegroundWindow(_lastTargetHwnd);
+                    Thread.Sleep(30);
+                }
+
                 uint cfCanInclude = RegisterClipboardFormat("CanIncludeInClipboardHistory");
                 uint cfCanUpload = RegisterClipboardFormat("CanUploadToCloudClipboard");
 
                 IntPtr ownerHwnd = _msgWindow != null ? _msgWindow.Handle : IntPtr.Zero;
+                bool clipboardSet = false;
                 for (int attempt = 0; attempt < 10; attempt++)
                 {
                     if (OpenClipboard(ownerHwnd))
@@ -1137,9 +1156,18 @@ namespace IndicFlowNativeHelper
                         }
                     }
 
-                    _pendingPasteText = textToPaste;
-                    SetClipboardData(CF_UNICODETEXT, IntPtr.Zero);
+                    // Directly write CF_UNICODETEXT bytes into clipboard memory
+                    byte[] bytes = Encoding.Unicode.GetBytes(textToPaste + "\0");
+                    IntPtr hMem = GlobalAlloc(GMEM_MOVEABLE, (UIntPtr)bytes.Length);
+                    if (hMem != IntPtr.Zero)
+                    {
+                        IntPtr ptr = GlobalLock(hMem);
+                        Marshal.Copy(bytes, 0, ptr, bytes.Length);
+                        GlobalUnlock(hMem);
+                        SetClipboardData(CF_UNICODETEXT, hMem);
+                    }
 
+                    _pendingPasteText = textToPaste;
                     CloseClipboard();
                 }
                 else
@@ -1148,7 +1176,7 @@ namespace IndicFlowNativeHelper
                     {
                         try
                         {
-                            Clipboard.SetDataObject(textToPaste, false, 5, 40);
+                            Clipboard.SetDataObject(textToPaste, true, 5, 40);
                             break;
                         }
                         catch
@@ -1157,6 +1185,9 @@ namespace IndicFlowNativeHelper
                         }
                     }
                 }
+
+                // Settle clipboard notification before sending keys
+                Thread.Sleep(40);
 
                 SendCtrlV();
 
@@ -1192,6 +1223,17 @@ namespace IndicFlowNativeHelper
 
         private static void SendCtrlV()
         {
+            // Ensure Alt key is up so Ctrl+V is not interpreted as Alt+Ctrl+V
+            if ((GetAsyncKeyState(VK_MENU) & 0x8000) != 0)
+            {
+                INPUT altUp = new INPUT();
+                altUp.type = INPUT_KEYBOARD;
+                altUp.mkhi.ki.wVk = VK_MENU;
+                altUp.mkhi.ki.dwFlags = KEYEVENTF_KEYUP;
+                SendInput(1, new INPUT[] { altUp }, Marshal.SizeOf(typeof(INPUT)));
+                Thread.Sleep(10);
+            }
+
             INPUT[] inputs = new INPUT[4];
 
             // 1. Ctrl Down

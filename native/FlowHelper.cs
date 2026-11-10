@@ -221,6 +221,9 @@ namespace IndicFlowNativeHelper
         [DllImport("user32.dll", SetLastError = true)]
         private static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
 
+        [DllImport("user32.dll")]
+        private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
+
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern IntPtr GlobalAlloc(uint uFlags, UIntPtr dwBytes);
 
@@ -817,9 +820,13 @@ namespace IndicFlowNativeHelper
                     }
                     else if (isKeyUp && _isHotkeyActive)
                     {
-                        if (key == Keys.ControlKey || key == Keys.LControlKey || key == Keys.RControlKey ||
+                        if (key == Keys.Menu || key == Keys.LMenu || key == Keys.RMenu)
+                        {
+                            HandleHotkeyRelease();
+                            return (IntPtr)1;
+                        }
+                        else if (key == Keys.ControlKey || key == Keys.LControlKey || key == Keys.RControlKey ||
                             key == Keys.ShiftKey || key == Keys.LShiftKey || key == Keys.RShiftKey ||
-                            key == Keys.Menu || key == Keys.LMenu || key == Keys.RMenu ||
                             key == Keys.LWin || key == Keys.RWin)
                         {
                             HandleHotkeyRelease();
@@ -1174,7 +1181,7 @@ namespace IndicFlowNativeHelper
             {
                 // Ensure target window is in the foreground
                 IntPtr currentForeground = GetForegroundWindow();
-                if (_lastTargetHwnd != IntPtr.Zero && _lastTargetHwnd != currentForeground)
+                if (_lastTargetHwnd != IntPtr.Zero)
                 {
                     uint myThread = GetCurrentThreadId();
                     uint dummyPid;
@@ -1190,7 +1197,7 @@ namespace IndicFlowNativeHelper
                     if (myThread != targetThread && targetThread != 0) AttachThreadInput(myThread, targetThread, false);
                     if (fgThread != 0 && fgThread != targetThread) AttachThreadInput(fgThread, targetThread, false);
 
-                    Thread.Sleep(50);
+                    Thread.Sleep(60);
                 }
 
                 uint cfCanInclude = RegisterClipboardFormat("CanIncludeInClipboardHistory");
@@ -1288,46 +1295,46 @@ namespace IndicFlowNativeHelper
             ReleaseModifier(VK_RWIN);
             Thread.Sleep(20);
 
-            // 1. Ctrl Down
-            INPUT ctrlDown = new INPUT();
-            ctrlDown.type = INPUT_KEYBOARD;
-            ctrlDown.mkhi.ki.wVk = VK_CONTROL;
-            ctrlDown.mkhi.ki.wScan = (ushort)MapVirtualKey(VK_CONTROL, 0);
-            ctrlDown.mkhi.ki.dwFlags = 0;
-            SendInput(1, new INPUT[] { ctrlDown }, Marshal.SizeOf(typeof(INPUT)));
+            // 1. Synthesize Ctrl+V via keybd_event (direct raw input queue dispatch for Chromium / Electron / Antigravity IDE)
+            keybd_event((byte)VK_CONTROL, 0x1D, 0, UIntPtr.Zero);
+            Thread.Sleep(25);
+            keybd_event((byte)VK_V, 0x2F, 0, UIntPtr.Zero);
+            Thread.Sleep(35);
+            keybd_event((byte)VK_V, 0x2F, KEYEVENTF_KEYUP, UIntPtr.Zero);
             Thread.Sleep(20);
+            keybd_event((byte)VK_CONTROL, 0x1D, KEYEVENTF_KEYUP, UIntPtr.Zero);
+            Thread.Sleep(15);
 
-            // 2. V Down
-            INPUT vDown = new INPUT();
-            vDown.type = INPUT_KEYBOARD;
-            vDown.mkhi.ki.wVk = VK_V;
-            vDown.mkhi.ki.wScan = (ushort)MapVirtualKey(VK_V, 0);
-            vDown.mkhi.ki.dwFlags = 0;
-            SendInput(1, new INPUT[] { vDown }, Marshal.SizeOf(typeof(INPUT)));
-            Thread.Sleep(30);
+            // 2. Also send via SendInput with explicit scan codes as dual guarantee
+            INPUT[] inputs = new INPUT[4];
+            inputs[0].type = INPUT_KEYBOARD;
+            inputs[0].mkhi.ki.wVk = VK_CONTROL;
+            inputs[0].mkhi.ki.wScan = 0x1D;
+            inputs[0].mkhi.ki.dwFlags = 0;
 
-            // 3. V Up
-            INPUT vUp = new INPUT();
-            vUp.type = INPUT_KEYBOARD;
-            vUp.mkhi.ki.wVk = VK_V;
-            vUp.mkhi.ki.wScan = (ushort)MapVirtualKey(VK_V, 0);
-            vUp.mkhi.ki.dwFlags = KEYEVENTF_KEYUP;
-            SendInput(1, new INPUT[] { vUp }, Marshal.SizeOf(typeof(INPUT)));
-            Thread.Sleep(20);
+            inputs[1].type = INPUT_KEYBOARD;
+            inputs[1].mkhi.ki.wVk = VK_V;
+            inputs[1].mkhi.ki.wScan = 0x2F;
+            inputs[1].mkhi.ki.dwFlags = 0;
 
-            // 4. Ctrl Up
-            INPUT ctrlUp = new INPUT();
-            ctrlUp.type = INPUT_KEYBOARD;
-            ctrlUp.mkhi.ki.wVk = VK_CONTROL;
-            ctrlUp.mkhi.ki.wScan = (ushort)MapVirtualKey(VK_CONTROL, 0);
-            ctrlUp.mkhi.ki.dwFlags = KEYEVENTF_KEYUP;
-            SendInput(1, new INPUT[] { ctrlUp }, Marshal.SizeOf(typeof(INPUT)));
+            inputs[2].type = INPUT_KEYBOARD;
+            inputs[2].mkhi.ki.wVk = VK_V;
+            inputs[2].mkhi.ki.wScan = 0x2F;
+            inputs[2].mkhi.ki.dwFlags = KEYEVENTF_KEYUP;
+
+            inputs[3].type = INPUT_KEYBOARD;
+            inputs[3].mkhi.ki.wVk = VK_CONTROL;
+            inputs[3].mkhi.ki.wScan = 0x1D;
+            inputs[3].mkhi.ki.dwFlags = KEYEVENTF_KEYUP;
+
+            SendInput((uint)inputs.Length, inputs, Marshal.SizeOf(typeof(INPUT)));
         }
 
         private static void ReleaseModifier(ushort vk)
         {
             if ((GetAsyncKeyState(vk) & 0x8000) != 0)
             {
+                keybd_event((byte)vk, (byte)MapVirtualKey(vk, 0), KEYEVENTF_KEYUP, UIntPtr.Zero);
                 INPUT up = new INPUT();
                 up.type = INPUT_KEYBOARD;
                 up.mkhi.ki.wVk = vk;

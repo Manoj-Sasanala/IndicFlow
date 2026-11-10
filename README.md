@@ -94,6 +94,7 @@ npm run test:gnani
 ```powershell
 npm start
 ```
+*Or on Windows, simply double-click **`run.bat`**.*
 - Open any app (e.g., Notepad, WhatsApp, or Chrome).
 - Press your configured hotkey (default: **Double-tap Fn / CapsLock** or click the floating pill).
 - Speak in Hindi, Hinglish, or English:

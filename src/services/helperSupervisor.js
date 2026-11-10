@@ -83,10 +83,12 @@ class HelperSupervisor extends EventEmitter {
     // Check if binary or script exists
     let targetExecutable = this.helperPath;
     let spawnArgs = [];
+    let spawnsNodeScript = false;
 
     if (targetExecutable.endsWith('.js')) {
       spawnArgs = [targetExecutable];
       targetExecutable = process.execPath;
+      spawnsNodeScript = true;
     } else if (!fs.existsSync(targetExecutable)) {
       // Check for mock helper in native directory
       const mockHelperPath = path.resolve(__dirname, '../../native/mockHelper.js');
@@ -94,6 +96,7 @@ class HelperSupervisor extends EventEmitter {
         console.warn(`[HelperSupervisor] FlowHelper.exe not found at ${targetExecutable}. Spawning mock helper at ${mockHelperPath}`);
         targetExecutable = process.execPath; // node.exe
         spawnArgs = [mockHelperPath];
+        spawnsNodeScript = true;
       } else {
         console.warn(`[HelperSupervisor] FlowHelper.exe not found at ${targetExecutable}. Will retry in 5s.`);
         this._scheduleReconnect();
@@ -110,6 +113,8 @@ class HelperSupervisor extends EventEmitter {
         windowsHide: true,
         env: {
           ...process.env,
+          // Under Electron process.execPath is electron.exe, so a JS helper only runs as Node with this flag
+          ...(spawnsNodeScript && process.versions.electron ? { ELECTRON_RUN_AS_NODE: '1' } : {}),
           FLOW_IPC_VERSION: '1.0',
           FLOW_PARENT_PID: String(process.pid)
         }

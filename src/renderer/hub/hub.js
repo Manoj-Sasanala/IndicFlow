@@ -61,7 +61,6 @@ async function initHub() {
   bindDictionaryEvents();
   bindNotesEvents();
   bindSettingsEvents();
-  initMagnificationDock();
 
   // Load Initial Data
   await Promise.all([
@@ -103,10 +102,6 @@ function switchTab(tab) {
   activeTab = tab;
   navItems.forEach(i => i.classList.toggle('active', i.getAttribute('data-tab') === tab));
   tabPanels.forEach(p => p.classList.toggle('active', p.id === `tab-${tab}`));
-
-  // Synchronize Magnification Dock tabs
-  const dockItems = document.querySelectorAll('.dock-item[data-tab]');
-  dockItems.forEach(i => i.classList.toggle('active', i.getAttribute('data-tab') === tab));
 }
 
 // --- Window Controls ---
@@ -131,24 +126,16 @@ function bindDictationControls() {
 
 function updateDictationState(state) {
   currentDictationState = state;
-  const dockDictateBtn = document.getElementById('dock-btn-dictate');
-  const dockTooltip = dockDictateBtn?.querySelector('.dock-tooltip');
 
   if (state === 'listening') {
     if (btnDictationLabel) btnDictationLabel.textContent = 'Stop Dictation';
     btnToggleDictation?.classList.add('recording');
-    dockDictateBtn?.classList.add('recording');
-    if (dockTooltip) dockTooltip.textContent = 'Stop Dictation';
   } else if (state === 'processing') {
     if (btnDictationLabel) btnDictationLabel.textContent = 'Transcribing...';
     btnToggleDictation?.classList.remove('recording');
-    dockDictateBtn?.classList.remove('recording');
-    if (dockTooltip) dockTooltip.textContent = 'Transcribing...';
   } else {
     if (btnDictationLabel) btnDictationLabel.textContent = 'Start Dictation';
     btnToggleDictation?.classList.remove('recording');
-    dockDictateBtn?.classList.remove('recording');
-    if (dockTooltip) dockTooltip.textContent = 'Start Dictation (Fn x2)';
   }
 }
 
@@ -525,120 +512,6 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
-}
-
-// --- macOS Magnification Dock Physics Engine ---
-function initMagnificationDock() {
-  const dockPanel = document.getElementById('magnification-dock-panel');
-  if (!dockPanel) return;
-
-  const dockItems = Array.from(dockPanel.querySelectorAll('.dock-item'));
-  const BASE_SIZE = 44;
-  const MAX_SIZE = 64;
-  const DISTANCE = 150;
-
-  let targetSizes = new Float32Array(dockItems.length).fill(BASE_SIZE);
-  let currentSizes = new Float32Array(dockItems.length).fill(BASE_SIZE);
-  let velocities = new Float32Array(dockItems.length).fill(0);
-  let animFrameId = null;
-
-  const stiffness = 160;
-  const damping = 14;
-  const mass = 0.1;
-
-  function updatePhysics(dt = 0.016) {
-    let moving = false;
-    for (let i = 0; i < dockItems.length; i++) {
-      const displacement = targetSizes[i] - currentSizes[i];
-      const springForce = displacement * stiffness;
-      const dampingForce = -damping * velocities[i];
-      const acceleration = (springForce + dampingForce) / mass;
-
-      velocities[i] += acceleration * dt;
-      currentSizes[i] += velocities[i] * dt;
-
-      if (Math.abs(velocities[i]) > 0.05 || Math.abs(displacement) > 0.05) {
-        moving = true;
-      } else {
-        currentSizes[i] = targetSizes[i];
-        velocities[i] = 0;
-      }
-
-      dockItems[i].style.width = `${currentSizes[i]}px`;
-      dockItems[i].style.height = `${currentSizes[i]}px`;
-    }
-
-    if (moving) {
-      animFrameId = requestAnimationFrame(() => updatePhysics(0.016));
-    } else {
-      animFrameId = null;
-    }
-  }
-
-  function startPhysicsLoop() {
-    if (!animFrameId) {
-      animFrameId = requestAnimationFrame(() => updatePhysics(0.016));
-    }
-  }
-
-  dockPanel.addEventListener('mousemove', (e) => {
-    dockPanel.classList.add('magnified');
-    const mouseX = e.clientX;
-
-    dockItems.forEach((item, idx) => {
-      const rect = item.getBoundingClientRect();
-      const itemCenterX = rect.left + rect.width / 2;
-      const dist = Math.abs(mouseX - itemCenterX);
-
-      if (dist < DISTANCE) {
-        const factor = Math.cos((dist / DISTANCE) * (Math.PI / 2));
-        targetSizes[idx] = BASE_SIZE + (MAX_SIZE - BASE_SIZE) * factor;
-      } else {
-        targetSizes[idx] = BASE_SIZE;
-      }
-    });
-
-    startPhysicsLoop();
-  });
-
-  dockPanel.addEventListener('mouseleave', () => {
-    dockPanel.classList.remove('magnified');
-    targetSizes.fill(BASE_SIZE);
-    startPhysicsLoop();
-  });
-
-  // Dock item clicks
-  dockItems.forEach((item) => {
-    item.addEventListener('click', async () => {
-      const tab = item.getAttribute('data-tab');
-      if (tab) {
-        switchTab(tab);
-      } else if (item.id === 'dock-btn-dictate') {
-        if (!window.flowAPI) return;
-        if (currentDictationState === 'idle') {
-          await window.flowAPI.startDictation();
-        } else if (currentDictationState === 'listening') {
-          await window.flowAPI.stopDictation();
-        }
-      } else if (item.id === 'dock-btn-copy') {
-        copyLatestTranscript(item);
-      }
-    });
-  });
-}
-
-function copyLatestTranscript(btn) {
-  const firstItem = document.querySelector('.history-text');
-  if (firstItem && firstItem.textContent) {
-    const text = firstItem.textContent.trim();
-    navigator.clipboard?.writeText(text);
-    const tooltip = btn?.querySelector('.dock-tooltip');
-    if (tooltip) {
-      const oldText = tooltip.textContent;
-      tooltip.textContent = 'Copied!';
-      setTimeout(() => { tooltip.textContent = oldText; }, 1800);
-    }
-  }
 }
 
 // Start

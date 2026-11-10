@@ -1,14 +1,19 @@
-/* Modern Frameless Floating Pill Styling - Impeccable Design System */
+/* ==============================================================================
+   IndicFlow Pill - TECTONIC STONE DESIGN SYSTEM
+   Theme: Digital Geology & Obsidian Minimalism (Carved, Not Built)
+   ============================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800&family=Space+Grotesk:wght@500;700&display=swap');
+
 :root {
-  --bg-pill: rgba(8, 10, 16, 0.94);
-  --border-pill: rgba(255, 255, 255, 0.12);
-  --accent-purple: #7c3aed;
-  --accent-saffron: #f97316;
-  --accent-indigo: #6366f1;
-  --accent-cyan: #06b6d4;
-  --accent-success: #10b981;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
+  --color-obsidian: #050505;
+  --color-basalt: #1A1C1E;
+  --color-granite: #2D3033;
+  --color-magma: #FF4800;
+  --color-magma-glow: rgba(255, 72, 0, 0.5);
+  --color-gilded-gold: #D4AF37;
+  --color-ash-white: #E0E0E0;
+  --color-ash-muted: #8E9296;
 }
 
 * {
@@ -16,6 +21,7 @@
   margin: 0;
   padding: 0;
   user-select: none;
+  border-radius: 0px !important; /* Brutal Permanence: No rounded corners */
 }
 
 html, body {
@@ -23,28 +29,43 @@ html, body {
   height: 100%;
   overflow: hidden;
   background: transparent;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: 'Space Grotesk', -apple-system, sans-serif;
   display: flex;
   align-items: center;
   justify-content: center;
   -webkit-font-smoothing: antialiased;
 }
 
+/* The Tectonic Monolith Ingot (Pill) */
 .pill {
   position: relative;
-  width: 230px;
-  height: 46px;
-  border-radius: 9999px;
-  background: var(--bg-pill);
-  border: 1px solid var(--border-pill);
-  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.8), 0 0 25px rgba(124, 58, 237, 0.35), 0 0 40px rgba(249, 115, 22, 0.12);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  width: 236px;
+  height: 48px;
+  background: var(--color-basalt);
+  border-top: 1px solid rgba(224, 224, 224, 0.25);
+  border-left: 1px solid rgba(224, 224, 224, 0.18);
+  border-right: 1px solid rgba(0, 0, 0, 0.9);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.95);
+  /* 45-degree chamfered geometric polygon cut */
+  clip-path: polygon(
+    10px 0, 
+    calc(100% - 10px) 0, 
+    100% 10px, 
+    100% calc(100% - 10px), 
+    calc(100% - 10px) 100%, 
+    10px 100%, 
+    0 calc(100% - 10px), 
+    0 10px
+  );
+  box-shadow: 
+    0 18px 40px rgba(0, 0, 0, 0.95), 
+    0 0 20px var(--color-magma-glow),
+    inset 1px 1px 0px rgba(224, 224, 224, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
   -webkit-app-region: drag;
   cursor: grab;
 }
@@ -53,7 +74,7 @@ html, body {
   cursor: grabbing;
 }
 
-/* Individual Views */
+/* Pill Views */
 .pill-view {
   position: absolute;
   inset: 0;
@@ -62,218 +83,177 @@ html, body {
   justify-content: space-between;
   padding: 0 16px;
   opacity: 0;
-  transform: scale(0.95);
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transform: translateY(6px);
+  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* States */
 .state-listening .view-listening {
   display: flex;
   opacity: 1;
-  transform: scale(1);
+  transform: translateY(0);
 }
 
 .state-processing .view-processing {
   display: flex;
   opacity: 1;
-  transform: scale(1);
+  transform: translateY(0);
 }
 
 .state-success .view-success {
   display: flex;
   opacity: 1;
-  transform: scale(1);
+  transform: translateY(0);
 }
 
-.state-idle {
-  opacity: 0;
-  pointer-events: none;
+.state-error .view-error {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
 }
 
-/* --- Listening View Styling --- */
+/* Listening Mode: The Magma Core */
 .mic-indicator {
   position: relative;
+  width: 22px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
 }
 
 .pulsing-halo {
   position: absolute;
-  inset: -3px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(124, 58, 237, 0.45) 0%, rgba(249, 115, 22, 0.25) 50%, transparent 75%);
-  animation: halo-pulse 1.8s infinite ease-out;
+  inset: -4px;
+  background: var(--color-magma);
+  opacity: 0.3;
+  clip-path: polygon(4px 0, calc(100% - 4px) 0, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 0 calc(100% - 4px), 0 4px);
+  animation: magma-halo-pulse 1.4s ease-in-out infinite;
 }
 
-@keyframes halo-pulse {
-  0% { transform: scale(0.85); opacity: 0.9; }
-  50% { transform: scale(1.35); opacity: 0.25; }
-  100% { transform: scale(0.85); opacity: 0.9; }
+@keyframes magma-halo-pulse {
+  0%, 100% {
+    transform: scale(0.9);
+    opacity: 0.2;
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 0.55;
+    box-shadow: 0 0 14px var(--color-magma);
+  }
 }
 
 .mic-icon {
-  width: 16px;
-  height: 16px;
-  color: #fb923c;
+  width: 14px;
+  height: 14px;
+  color: var(--color-magma);
+  position: relative;
   z-index: 2;
-  filter: drop-shadow(0 0 6px rgba(249, 115, 22, 0.6));
+  filter: drop-shadow(0 0 6px var(--color-magma));
 }
 
-/* Audio Visualizer Waveform */
+/* Molten Lava Waveform Visualizer */
 .waveform-container {
   display: flex;
   align-items: center;
-  gap: 3.5px;
+  gap: 3px;
   height: 22px;
 }
 
-.bar {
-  width: 3.5px;
-  height: 6px;
-  min-height: 4px;
-  max-height: 22px;
-  background: linear-gradient(180deg, #f97316 0%, #7c3aed 100%);
-  border-radius: 999px;
-  box-shadow: 0 0 6px rgba(249, 115, 22, 0.35);
+.waveform-container .bar {
+  width: 3px;
+  height: 4px;
+  background: linear-gradient(180deg, #FF4800 0%, #D4AF37 100%);
+  box-shadow: 0 0 6px var(--color-magma);
   transition: height 0.08s ease;
 }
 
-/* Fallback organic animation when mic input is silent */
-.pulsing .bar-1 { animation: wave 1.2s infinite ease-in-out 0.0s; }
-.pulsing .bar-2 { animation: wave 1.2s infinite ease-in-out 0.15s; }
-.pulsing .bar-3 { animation: wave 1.2s infinite ease-in-out 0.3s; }
-.pulsing .bar-4 { animation: wave 1.2s infinite ease-in-out 0.45s; }
-.pulsing .bar-5 { animation: wave 1.2s infinite ease-in-out 0.3s; }
-.pulsing .bar-6 { animation: wave 1.2s infinite ease-in-out 0.15s; }
-.pulsing .bar-7 { animation: wave 1.2s infinite ease-in-out 0.0s; }
-
-@keyframes wave {
-  0%, 100% { height: 5px; }
-  50% { height: 20px; }
-}
-
+/* Chiseled Timer */
 .pill-timer {
+  font-family: 'Space Grotesk', monospace;
   font-size: 11px;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-muted);
-  font-weight: 600;
-  letter-spacing: 0.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--color-ash-white);
+  text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.9);
 }
 
+/* Stop Button */
 .pill-actions {
-  -webkit-app-region: no-drag;
+  display: flex;
+  align-items: center;
 }
 
 .pill-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: var(--text-main);
-  border-radius: 50%;
+  background: var(--color-obsidian);
+  border: 1px solid var(--color-gilded-gold);
+  color: var(--color-gilded-gold);
   width: 24px;
   height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.15s ease;
+  -webkit-app-region: no-drag;
+  clip-path: polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 0 100%);
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .pill-btn:hover {
-  background: rgba(16, 185, 129, 0.3);
-  border-color: rgba(16, 185, 129, 0.5);
-  color: #34d399;
-  transform: scale(1.08);
+  background: var(--color-gilded-gold);
+  color: #050505;
+  box-shadow: 0 0 12px var(--color-gilded-gold);
 }
 
-/* --- Processing View Styling --- */
+/* State 2: Processing (Volcanic Core) */
 .view-processing {
   justify-content: center;
-  gap: 12px;
-}
-
-.shimmer-layer {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(124, 58, 237, 0.18) 30%,
-    rgba(249, 115, 22, 0.25) 50%,
-    rgba(124, 58, 237, 0.18) 70%,
-    transparent 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite linear;
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  gap: 10px;
 }
 
 .spinner-ring {
-  width: 17px;
-  height: 17px;
-  border: 2px solid rgba(255, 255, 255, 0.15);
-  border-top-color: #7c3aed;
-  border-right-color: #f97316;
-  border-radius: 50%;
-  animation: spin 0.8s infinite linear;
-  z-index: 2;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--color-granite);
+  border-top-color: var(--color-magma);
+  animation: tectonic-spin 0.8s linear infinite;
 }
 
-@keyframes spin {
+@keyframes tectonic-spin {
   to { transform: rotate(360deg); }
 }
 
 .processing-text {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text-main);
-  letter-spacing: 0.3px;
-  z-index: 2;
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-ash-white);
 }
 
-/* --- Success View Styling --- */
+/* State 3: Success */
 .view-success {
   justify-content: center;
-  gap: 10px;
-  background: radial-gradient(circle at center, rgba(16, 185, 129, 0.2) 0%, transparent 75%);
-}
-
-.success-icon-wrap {
-  width: 22px;
-  height: 22px;
-}
-
-.checkmark-svg {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  display: block;
-  stroke-width: 3.5;
-  stroke: var(--accent-success);
-  stroke-miterlimit: 10;
-  filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.5));
-  animation: fill-check 0.4s ease-in-out forwards;
+  gap: 8px;
 }
 
 .checkmark-circle {
   stroke-dasharray: 166;
   stroke-dashoffset: 166;
-  stroke-width: 3.5;
-  stroke: rgba(16, 185, 129, 0.3);
-  animation: stroke 0.4s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+  stroke-width: 3;
+  stroke: var(--color-gilded-gold);
+  fill: none;
+  animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
 }
 
 .checkmark-check {
   transform-origin: 50% 50%;
   stroke-dasharray: 48;
   stroke-dashoffset: 48;
-  animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.2s forwards;
+  stroke-width: 3;
+  stroke: var(--color-gilded-gold);
+  fill: none;
+  animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.4s forwards;
 }
 
 @keyframes stroke {
@@ -281,34 +261,10 @@ html, body {
 }
 
 .success-text {
-  font-size: 13px;
-  font-weight: 600;
-  color: #34d399;
-  letter-spacing: 0.2px;
-}
-
-.checkmark-circle {
-  stroke-dasharray: 166;
-  stroke-dashoffset: 166;
-  stroke-width: 3.5;
-  stroke: rgba(16, 185, 129, 0.3);
-  animation: stroke 0.4s cubic-bezier(0.65, 0, 0.45, 1) forwards;
-}
-
-.checkmark-check {
-  transform-origin: 50% 50%;
-  stroke-dasharray: 48;
-  stroke-dashoffset: 48;
-  animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.2s forwards;
-}
-
-@keyframes stroke {
-  100% { stroke-dashoffset: 0; }
-}
-
-.success-text {
-  font-size: 13px;
-  font-weight: 600;
-  color: #34d399;
-  letter-spacing: 0.2px;
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-gilded-gold);
 }

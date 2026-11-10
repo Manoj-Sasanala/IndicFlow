@@ -551,6 +551,21 @@ body {
   border-radius: 4px;
 }
 
+.engine-tag {
+  font-size: 11px;
+  font-weight: 500;
+  background: rgba(14, 165, 233, 0.12);
+  color: #0284c7;
+  border: 1px solid rgba(14, 165, 233, 0.25);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+[data-theme="dark"] .engine-tag {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
 .time-stamp {
   font-size: 11.5px;
   color: var(--text-muted);

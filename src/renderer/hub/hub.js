@@ -239,10 +239,29 @@ async function loadHistory(query = '') {
       const appName = item.app || 'Unknown App';
       const durationText = item.duration ? `${item.duration}s` : '';
 
+      let meta = {};
+      if (typeof item.metadata === 'string') {
+        try {
+          meta = JSON.parse(item.metadata);
+          if (typeof meta === 'string') meta = JSON.parse(meta);
+        } catch {}
+      } else if (typeof item.metadata === 'object' && item.metadata) {
+        meta = item.metadata;
+      }
+
+      let engineBadge = '';
+      if (meta.provider || meta.model) {
+        const provName = meta.provider === 'gnani_prisma' ? 'Gnani' : meta.provider === 'gemini' ? 'Gemini' : meta.provider === 'groq' ? 'Groq' : (meta.provider || '');
+        const modelName = meta.model ? String(meta.model).replace(/^models\//, '') : '';
+        const label = provName && modelName ? `${provName} • ${modelName}` : (provName || modelName);
+        engineBadge = `<span class="engine-tag" title="Engine: ${escapeHtml(label)}">${escapeHtml(label)}</span>`;
+      }
+
       card.innerHTML = `
         <div class="history-card-header">
           <div class="history-meta">
             <span class="app-tag">${escapeHtml(appName)}</span>
+            ${engineBadge}
             <span class="time-stamp">${formattedDate} &bull; ${durationText}</span>
           </div>
           <div class="history-card-actions">

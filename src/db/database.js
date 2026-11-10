@@ -108,7 +108,7 @@ class FlowDatabase {
       ['gnaniModel', 'prisma-v3.0'],
       ['gnaniLanguage', 'indic-auto'],
       ['geminiApiKey', process.env.GEMINI_API_KEY || ''],
-      ['geminiModel', 'gemini-3.5-flash'],
+      ['geminiModel', 'gemini-flash-lite-latest'],
       ['groqApiKey', process.env.GROQ_API_KEY || ''],
       ['cloudEndpoint', 'wss://api.flow.local/v1/stream'],
       ['audioDevice', 'default'],
@@ -142,7 +142,9 @@ class FlowDatabase {
     const url = item.url || null;
     const duration = item.duration || 0;
     const status = item.status || 'completed';
-    const metadata = item.metadata ? JSON.stringify(item.metadata) : null;
+    const metadata = typeof item.metadata === 'object' && item.metadata !== null
+      ? JSON.stringify(item.metadata)
+      : (item.metadata || null);
 
     const stmt = this.db.prepare(`
       INSERT INTO History (id, timestamp, asrText, formattedText, pastedText, app, url, duration, status, metadata)

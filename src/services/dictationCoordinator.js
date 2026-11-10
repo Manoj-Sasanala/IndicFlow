@@ -43,7 +43,7 @@ class DictationCoordinator extends EventEmitter {
       groqApiKey: this.db ? this.db.getSetting('groqApiKey', process.env.GROQ_API_KEY || '') : '',
       openaiApiKey: this.db ? this.db.getSetting('openaiApiKey', process.env.OPENAI_API_KEY || '') : '',
       geminiApiKey: this.db ? this.db.getSetting('geminiApiKey', process.env.GEMINI_API_KEY || '') : '',
-      geminiModel: this.db ? this.db.getSetting('geminiModel', 'gemini-3.5-flash') : 'gemini-3.5-flash',
+      geminiModel: this.db ? this.db.getSetting('geminiModel', 'gemini-flash-lite-latest') : 'gemini-flash-lite-latest',
       groqModel: this.db ? this.db.getSetting('model', 'whisper-large-v3-turbo') : 'whisper-large-v3-turbo'
     });
 
@@ -197,6 +197,12 @@ class DictationCoordinator extends EventEmitter {
     this._setState('processing', { duration });
 
     let rawAsr = '';
+    let asrMeta = {
+      provider: 'unknown',
+      model: 'unknown',
+      latencyMs: 0,
+      detectedLanguage: 'indic-auto'
+    };
 
     // If an audio buffer is provided, transcribe with STTService
     if (Buffer.isBuffer(audioOrSimulatedText) || (audioOrSimulatedText && (audioOrSimulatedText.data || Array.isArray(audioOrSimulatedText)))) {
@@ -213,12 +219,24 @@ class DictationCoordinator extends EventEmitter {
           language: activeLanguageSetting
         });
         rawAsr = asrResult.text || asrResult.rawAsrText || '';
+        asrMeta = {
+          provider: asrResult.provider || (activeModelSetting.startsWith('gemini') ? 'gemini' : activeModelSetting.startsWith('groq') ? 'groq' : 'gnani_prisma'),
+          model: asrResult.model || activeModelSetting || 'prisma-v3.0',
+          latencyMs: asrResult.latencyMs || 0,
+          detectedLanguage: asrResult.detectedLanguage || activeLanguageSetting
+        };
       } catch (err) {
         console.warn('[Coordinator] STT transcription error:', err.message);
         rawAsr = '';
       }
     } else if (typeof audioOrSimulatedText === 'string' && audioOrSimulatedText.trim().length > 0) {
       rawAsr = audioOrSimulatedText.trim();
+      asrMeta = {
+        provider: 'manual_input',
+        model: 'text',
+        latencyMs: 0,
+        detectedLanguage: 'en'
+      };
     } else {
       console.log('[Coordinator] No audio buffer or text provided');
       rawAsr = '';
@@ -310,11 +328,15 @@ class DictationCoordinator extends EventEmitter {
         app: app,
         duration: duration,
         status: 'completed',
-        metadata: JSON.stringify({
+        metadata: {
           commandType: classification.type,
           isCommand: classification.isCommand,
-          appCategory: this.contextFormatter.detectAppCategory(app, windowTitle)
-        })
+          appCategory: this.contextFormatter.detectAppCategory(app, windowTitle),
+          provider: asrMeta.provider,
+          model: asrMeta.model,
+          latencyMs: asrMeta.latencyMs,
+          detectedLanguage: asrMeta.detectedLanguage
+        }
       });
 
       // Notify Hub of new history item

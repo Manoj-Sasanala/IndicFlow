@@ -59,7 +59,7 @@ class ContextFormatter {
    * @param {string} [config.anthropicApiKey]
    * @param {string} [config.groqModel='llama-3.3-70b-versatile']
    * @param {string} [config.openaiModel='gpt-4o-mini']
-   * @param {string} [config.geminiModel='gemini-2.5-flash']
+   * @param {string} [config.geminiModel='gemini-flash-lite-latest']
    * @param {boolean} [config.preferLlm=false]
    */
   constructor(config = {}) {
@@ -70,7 +70,7 @@ class ContextFormatter {
 
     this.groqModel = config.groqModel || 'llama-3.3-70b-versatile';
     this.openaiModel = config.openaiModel || 'gpt-4o-mini';
-    this.geminiModel = config.geminiModel || 'gemini-2.5-flash';
+    this.geminiModel = config.geminiModel || 'gemini-flash-lite-latest';
 
     this.preferLlm = config.preferLlm || false;
     this.llmProvider = config.llmProvider || this._determineLlmProvider();

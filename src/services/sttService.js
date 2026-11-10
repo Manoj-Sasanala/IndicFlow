@@ -57,7 +57,7 @@ class STTService extends EventEmitter {
    * @param {string} [config.openaiApiKey]
    * @param {string} [config.openaiModel='whisper-1']
    * @param {string} [config.geminiApiKey]
-   * @param {string} [config.geminiModel='gemini-2.5-flash']
+   * @param {string} [config.geminiModel='gemini-flash-lite-latest']
    * @param {string} [config.localWhisperUrl]
    * @param {boolean} [config.enableFallback=true]
    * @param {number} [config.timeoutMs=25000]
@@ -78,7 +78,7 @@ class STTService extends EventEmitter {
     this.primaryProvider = config.primaryProvider || process.env.PRIMARY_STT_PROVIDER || this._determineDefaultProvider();
     this.groqModel = config.groqModel || 'whisper-large-v3-turbo';
     this.openaiModel = config.openaiModel || 'whisper-1';
-    this.geminiModel = config.geminiModel || 'gemini-3.5-flash';
+    this.geminiModel = config.geminiModel || 'gemini-flash-lite-latest';
     this.enableFallback = config.enableFallback !== false;
     this.timeoutMs = config.timeoutMs || 25000;
 

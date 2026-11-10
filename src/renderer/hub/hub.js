@@ -38,6 +38,10 @@ const btnNewNote = document.getElementById('btn-new-note');
 const btnDeleteNote = document.getElementById('btn-delete-note');
 
 // Settings elements
+const settingTheme = document.getElementById('setting-theme');
+const btnThemeToggle = document.getElementById('btn-theme-toggle');
+const themeIconSun = document.getElementById('theme-icon-sun');
+const themeIconMoon = document.getElementById('theme-icon-moon');
 const settingHotkey = document.getElementById('setting-hotkey');
 const settingActivationMode = document.getElementById('setting-activationMode');
 const settingModel = document.getElementById('setting-model');
@@ -51,6 +55,24 @@ let activeTab = 'history';
 let activeNoteId = null;
 let currentDictationState = 'idle';
 let noteSaveDebounceTimer = null;
+
+// --- Theme Management ---
+function applyTheme(theme) {
+  const targetTheme = (theme === 'dark') ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', targetTheme);
+  if (settingTheme) settingTheme.value = targetTheme;
+  if (themeIconSun && themeIconMoon) {
+    if (targetTheme === 'light') {
+      themeIconSun.style.display = 'none';
+      themeIconMoon.style.display = 'block';
+      btnThemeToggle?.setAttribute('title', 'Switch to Dark Mode');
+    } else {
+      themeIconSun.style.display = 'block';
+      themeIconMoon.style.display = 'none';
+      btnThemeToggle?.setAttribute('title', 'Switch to Light Mode');
+    }
+  }
+}
 
 // --- Initialize Hub ---
 async function initHub() {
@@ -109,6 +131,15 @@ function bindWindowControls() {
   btnMinimize?.addEventListener('click', () => window.flowAPI?.minimizeHub());
   btnMaximize?.addEventListener('click', () => window.flowAPI?.maximizeHub());
   btnClose?.addEventListener('click', () => window.flowAPI?.closeHub());
+
+  btnThemeToggle?.addEventListener('click', async () => {
+    const current = document.documentElement.getAttribute('data-theme') || 'light';
+    const next = current === 'light' ? 'dark' : 'light';
+    applyTheme(next);
+    if (window.flowAPI) {
+      await window.flowAPI.setSetting('theme', next);
+    }
+  });
 }
 
 // --- Dictation Control ---
@@ -433,6 +464,11 @@ function bindSettingsEvents() {
     }
   };
 
+  settingTheme?.addEventListener('change', (e) => {
+    const val = e.target.value;
+    applyTheme(val);
+    saveSetting('theme', val);
+  });
   settingHotkey?.addEventListener('change', (e) => saveSetting('hotkey', e.target.value));
   settingActivationMode?.addEventListener('change', (e) => saveSetting('activationMode', e.target.value));
   settingModel?.addEventListener('change', (e) => {
@@ -463,6 +499,8 @@ async function loadSettings() {
   try {
     const settings = await window.flowAPI.getSettings();
     if (settings) {
+      const activeTheme = settings.theme || 'light';
+      applyTheme(activeTheme);
       if (settings.hotkey && settingHotkey) settingHotkey.value = settings.hotkey;
       if (settings.activationMode && settingActivationMode) settingActivationMode.value = settings.activationMode;
       if (settings.model && settingModel) settingModel.value = settings.model;
@@ -471,6 +509,8 @@ async function loadSettings() {
       if (settingGnaniLanguage) settingGnaniLanguage.value = settings.gnaniLanguage || 'indic-auto';
       if (settingGeminiApiKey) settingGeminiApiKey.value = settings.geminiApiKey || '';
       if (settingGroqApiKey) settingGroqApiKey.value = settings.groqApiKey || '';
+    } else {
+      applyTheme('light');
     }
 
     // Check local engine status

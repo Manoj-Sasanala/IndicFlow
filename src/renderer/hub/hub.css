@@ -1,11 +1,58 @@
 /* IndicFlow Hub & Settings CSS - Impeccable Design System */
-:root {
+:root,
+[data-theme="light"] {
+  /* Surface Hierarchy (Pristine Slate & Crisp Studio White) */
+  --bg-dark: #f8fafc;
+  --bg-sidebar: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f8fafc;
+  --bg-input: #ffffff;
+  --bg-input-focus: #ffffff;
+  --bg-sunken: #f1f5f9;
+
+  /* Borders & Dividers */
+  --border-subtle: #e2e8f0;
+  --border-hover: #cbd5e1;
+  --border-focus: #7c3aed;
+
+  /* Brand Accents - Calibrated for Light Contrast */
+  --accent-purple: #7c3aed;
+  --accent-purple-glow: rgba(124, 58, 237, 0.16);
+  --accent-saffron: #f97316;
+  --accent-saffron-glow: rgba(249, 115, 22, 0.18);
+  --accent-cyan: #0284c7;
+  --accent-emerald: #059669;
+  --accent-rose: #e11d48;
+
+  /* Typography & Contrast (Strict WCAG AAA / AA Compliant) */
+  --text-primary: #0f172a;       /* Slate 900 - 15.8:1 contrast */
+  --text-secondary: #475569;     /* Slate 600 - 6.2:1 contrast */
+  --text-muted: #64748b;         /* Slate 500 - 4.6:1 contrast */
+  --text-brand: #6d28d9;         /* Violet 700 - 6.8:1 contrast */
+  --text-brand-grad-start: #0f172a;
+  --text-brand-grad-end: #7c3aed;
+
+  /* Geometry & Elevation */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.05), 0 0 0 1px #e2e8f0;
+  --shadow-glow: 0 4px 20px -2px rgba(124, 58, 237, 0.16);
+  --slider-bg: #cbd5e1;
+  --scrollbar-thumb: rgba(15, 23, 42, 0.16);
+  --scrollbar-thumb-hover: rgba(124, 58, 237, 0.45);
+}
+
+[data-theme="dark"] {
   /* Surface Hierarchy (Deep Cosmic Obsidian) */
   --bg-dark: #08090d;
   --bg-sidebar: #0d0f16;
   --bg-card: #121520;
   --bg-card-hover: #181d2c;
   --bg-input: #0f121a;
+  --bg-input-focus: #141724;
+  --bg-sunken: #0b0d13;
 
   /* Borders & Dividers */
   --border-subtle: rgba(255, 255, 255, 0.07);
@@ -26,6 +73,8 @@
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
   --text-brand: #c084fc;
+  --text-brand-grad-start: #ffffff;
+  --text-brand-grad-end: #c084fc;
 
   /* Geometry & Elevation */
   --radius-xs: 4px;
@@ -34,6 +83,9 @@
   --radius-lg: 16px;
   --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
   --shadow-glow: 0 0 24px -2px rgba(124, 58, 237, 0.25);
+  --slider-bg: #272a38;
+  --scrollbar-thumb: rgba(255, 255, 255, 0.12);
+  --scrollbar-thumb-hover: rgba(124, 58, 237, 0.45);
 }
 
 /* Custom Scrollbar System */
@@ -45,16 +97,16 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--scrollbar-thumb);
   border-radius: 9999px;
   transition: background 0.2s ease;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(124, 58, 237, 0.45);
+  background: var(--scrollbar-thumb-hover);
 }
 ::selection {
-  background: rgba(124, 58, 237, 0.35);
-  color: #ffffff;
+  background: rgba(124, 58, 237, 0.25);
+  color: var(--text-primary);
 }
 
 * {
@@ -120,26 +172,15 @@ body {
   font-size: 13.5px;
   font-weight: 700;
   letter-spacing: 0.4px;
-  background: linear-gradient(135deg, #ffffff 40%, #c084fc 100%);
+  background: linear-gradient(135deg, var(--text-brand-grad-start, #0f172a) 40%, var(--text-brand-grad-end, #7c3aed) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-}
-
-.brand-badge {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 8px;
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(249, 115, 22, 0.15) 100%);
-  color: #fb923c;
-  border-radius: 9999px;
-  border: 1px solid rgba(249, 115, 22, 0.35);
-  letter-spacing: 0.3px;
-  box-shadow: 0 0 10px rgba(249, 115, 22, 0.15);
 }
 
 .window-controls {
   display: flex;
   align-items: center;
+  gap: 4px;
   -webkit-app-region: no-drag;
 }
 
@@ -166,7 +207,7 @@ body {
 }
 
 .win-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--border-subtle);
   color: var(--text-primary);
 }
 
@@ -295,7 +336,7 @@ body {
 
 .nav-item.active {
   background: linear-gradient(90deg, rgba(124, 58, 237, 0.16) 0%, rgba(124, 58, 237, 0.04) 100%);
-  color: #ffffff;
+  color: var(--text-brand);
   font-weight: 600;
   box-shadow: inset 0 0 0 1px rgba(124, 58, 237, 0.3);
 }
@@ -314,7 +355,7 @@ body {
 }
 
 .nav-item.active svg {
-  color: #c084fc;
+  color: var(--accent-purple);
 }
 
 .sidebar-footer {
@@ -483,7 +524,8 @@ body {
 
 .history-card:hover {
   background-color: var(--bg-card-hover);
-  border-color: rgba(255, 255, 255, 0.14);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-card);
 }
 
 .history-card-header {
@@ -502,8 +544,9 @@ body {
 .app-tag {
   font-size: 11px;
   font-weight: 600;
-  background: rgba(139, 92, 246, 0.15);
-  color: #c084fc;
+  background: var(--accent-purple-glow);
+  color: var(--text-brand);
+  border: 1px solid rgba(124, 58, 237, 0.25);
   padding: 2px 7px;
   border-radius: 4px;
 }
@@ -539,7 +582,7 @@ body {
 }
 
 .action-icon-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--border-subtle);
   color: var(--text-primary);
 }
 
@@ -767,7 +810,7 @@ body {
 
 .setting-item:hover {
   background-color: var(--bg-card-hover);
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: var(--border-hover);
   transform: translateY(-1px);
 }
 
@@ -808,31 +851,38 @@ body {
 }
 
 .flow-select:hover {
-  border-color: rgba(255, 255, 255, 0.18);
+  border-color: var(--border-hover);
 }
 
 .flow-select:focus {
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.25);
+  box-shadow: 0 0 0 2px var(--accent-purple-glow);
 }
 
 .flow-input {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   letter-spacing: 0.5px;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  width: 220px;
+  font-size: 13px;
   transition: all 0.2s ease;
 }
 
 .flow-input:focus {
   outline: none;
   border-color: var(--accent-purple) !important;
-  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.3) !important;
+  box-shadow: 0 0 0 2px var(--accent-purple-glow) !important;
 }
 
 .db-badge {
   font-size: 11.5px;
   font-weight: 600;
   background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
+  color: var(--accent-emerald);
   padding: 4px 12px;
   border-radius: 9999px;
   border: 1px solid rgba(16, 185, 129, 0.3);
@@ -857,8 +907,8 @@ body {
   position: absolute;
   cursor: pointer;
   inset: 0;
-  background-color: #272a38;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: var(--slider-bg);
+  border: 1px solid var(--border-subtle);
   transition: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   border-radius: 24px;
 }
@@ -873,7 +923,7 @@ body {
   background-color: #ffffff;
   transition: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 input:checked + .slider {

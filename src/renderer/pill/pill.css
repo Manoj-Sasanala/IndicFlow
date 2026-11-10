@@ -1,5 +1,19 @@
 /* Modern Frameless Floating Pill Styling - Impeccable Design System */
-:root {
+:root,
+[data-theme="light"] {
+  --bg-pill: rgba(255, 255, 255, 0.94);
+  --border-pill: rgba(15, 23, 42, 0.12);
+  --accent-purple: #7c3aed;
+  --accent-saffron: #f97316;
+  --accent-indigo: #6366f1;
+  --accent-cyan: #0284c7;
+  --accent-success: #059669;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --pill-shadow: 0 12px 30px -4px rgba(15, 23, 42, 0.14), 0 0 20px rgba(124, 58, 237, 0.12), 0 0 0 1px rgba(15, 23, 42, 0.06);
+}
+
+[data-theme="dark"] {
   --bg-pill: rgba(8, 10, 16, 0.94);
   --border-pill: rgba(255, 255, 255, 0.12);
   --accent-purple: #7c3aed;
@@ -9,6 +23,7 @@
   --accent-success: #10b981;
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
+  --pill-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.8), 0 0 25px rgba(124, 58, 237, 0.35), 0 0 40px rgba(249, 115, 22, 0.12);
 }
 
 * {
@@ -37,7 +52,7 @@ html, body {
   border-radius: 9999px;
   background: var(--bg-pill);
   border: 1px solid var(--border-pill);
-  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.8), 0 0 25px rgba(124, 58, 237, 0.35), 0 0 40px rgba(249, 115, 22, 0.12);
+  box-shadow: var(--pill-shadow);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   display: flex;

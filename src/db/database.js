@@ -115,7 +115,7 @@ class FlowDatabase {
       ['autoPunctuation', 'true'],
       ['clipboardFallback', 'true'],
       ['caretTracking', 'true'],
-      ['theme', 'dark'],
+      ['theme', 'light'],
       ['soundEffects', 'true']
     ];
 

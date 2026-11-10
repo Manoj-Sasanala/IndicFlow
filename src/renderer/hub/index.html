@@ -24,6 +24,22 @@
         </div>
       </div>
       <div class="window-controls">
+        <button id="btn-theme-toggle" class="win-btn" title="Toggle Light / Dark Theme" aria-label="Toggle theme">
+          <svg id="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+          <svg id="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
         <button id="btn-minimize" class="win-btn" title="Minimize">
           <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg>
         </button>
@@ -199,6 +215,19 @@
           <div class="settings-grid">
             <div class="setting-item card">
               <div class="setting-info">
+                <h4>Interface Theme</h4>
+                <p>Choose between light and dark visual themes</p>
+              </div>
+              <div class="setting-control">
+                <select id="setting-theme" class="flow-select">
+                  <option value="light" selected>Light (Pristine Slate)</option>
+                  <option value="dark">Dark (Cosmic Obsidian)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="setting-item card">
+              <div class="setting-info">
                 <h4>Global Dictation Hotkey</h4>
                 <p>Trigger dictation from anywhere in the OS</p>
               </div>
@@ -225,7 +254,7 @@
               </div>
             </div>
 
-            <div class="setting-item card highlight-card" style="border: 1px solid rgba(124, 58, 237, 0.4); background: rgba(124, 58, 237, 0.06);">
+            <div class="setting-item card highlight-card">
               <div class="setting-info">
                 <h4 style="display: flex; align-items: center; gap: 8px;">
                   <span>Gnani AI API Key (Prisma STT)</span>
@@ -234,7 +263,7 @@
                 <p>Speech-to-text API key from app.gnani.ai (Vachana AI platform)</p>
               </div>
               <div class="setting-control">
-                <input type="password" id="setting-gnaniApiKey" class="flow-input" style="background:#181920; border:1px solid #7c3aed; color:#fff; padding:8px 12px; border-radius:6px; width:220px;" placeholder="vach_...">
+                <input type="password" id="setting-gnaniApiKey" class="flow-input" placeholder="vach_...">
               </div>
             </div>
 
@@ -280,7 +309,7 @@
                 <p>Google AI Studio API key used for verbatim speech transcription</p>
               </div>
               <div class="setting-control">
-                <input type="password" id="setting-geminiApiKey" class="flow-input" style="background:#181920; border:1px solid #2e303e; color:#fff; padding:8px 12px; border-radius:6px; width:220px;" placeholder="AIzaSy...">
+                <input type="password" id="setting-geminiApiKey" class="flow-input" placeholder="AIzaSy...">
               </div>
             </div>
 
@@ -290,7 +319,7 @@
                 <p>Free sub-200ms cloud STT (keys at console.groq.com)</p>
               </div>
               <div class="setting-control">
-                <input type="password" id="setting-groqApiKey" class="flow-input" style="background:#181920; border:1px solid #2e303e; color:#fff; padding:8px 12px; border-radius:6px; width:220px;" placeholder="gsk_...">
+                <input type="password" id="setting-groqApiKey" class="flow-input" placeholder="gsk_...">
               </div>
             </div>
 

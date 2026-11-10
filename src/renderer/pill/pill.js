@@ -186,7 +186,13 @@ if (window.flowAPI) {
     window.flowAPI.stopDictation(wavBytes);
   });
 
-  // Check initial state
+  // Check initial state & theme
+  window.flowAPI.getSettings?.().then((settings) => {
+    if (settings?.theme) {
+      document.documentElement.setAttribute('data-theme', settings.theme);
+    }
+  }).catch(() => {});
+
   window.flowAPI.getState().then((stateInfo) => {
     if (stateInfo && stateInfo.state) {
       setPillState(stateInfo.state);

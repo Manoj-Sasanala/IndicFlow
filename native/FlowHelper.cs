@@ -1153,7 +1153,8 @@ namespace IndicFlowNativeHelper
 
                 ThreadPool.QueueUserWorkItem((state) =>
                 {
-                    Thread.Sleep(120);
+                    // Target apps can take 200-500ms to pull the delayed clipboard data; restore too early and the paste is empty
+                    Thread.Sleep(1500);
                     try
                     {
                         if (_msgWindow != null && _msgWindow.IsHandleCreated)

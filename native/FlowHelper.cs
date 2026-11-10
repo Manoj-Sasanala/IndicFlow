@@ -262,6 +262,7 @@ namespace IndicFlowNativeHelper
         private static string _lastFocusApp = "";
         private static string _lastFocusTitle = "";
         private static IntPtr _lastTargetHwnd = IntPtr.Zero;
+        private static bool _altMaskActive = false;
 
         private static volatile string _pendingPasteText = null;
         private static readonly object _writeLock = new object();
@@ -480,6 +481,30 @@ namespace IndicFlowNativeHelper
             GetWindowThreadProcessId(hWnd, out pid);
             if (pid == (uint)Process.GetCurrentProcess().Id) return true;
             if (_parentPid != 0 && pid == _parentPid) return true;
+
+            try
+            {
+                using (Process proc = Process.GetProcessById((int)pid))
+                {
+                    string pName = proc.ProcessName.ToLowerInvariant();
+                    if (pName.Contains("flowhelper") || pName.Contains("indicflow")) return true;
+                    if (pName == "electron" && _parentPid != 0)
+                    {
+                        try
+                        {
+                            using (Process parentProc = Process.GetProcessById((int)_parentPid))
+                            {
+                                if (string.Equals(proc.MainModule.FileName, parentProc.MainModule.FileName, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    return true;
+                                }
+                            }
+                        }
+                        catch { }
+                    }
+                }
+            }
+            catch { }
             return false;
         }
 
@@ -782,6 +807,12 @@ namespace IndicFlowNativeHelper
                                     }
 
                                     _isHotkeyActive = true;
+                                    if (alt || _reqAlt)
+                                    {
+                                        _altMaskActive = true;
+                                        keybd_event(0xE8, 0, 0, UIntPtr.Zero);
+                                        keybd_event(0xE8, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+                                    }
                                     int now = Environment.TickCount;
                                     int diff = now - _lastTapReleaseTime;
 
@@ -818,16 +849,25 @@ namespace IndicFlowNativeHelper
                             }
                         }
                     }
-                    else if (isKeyUp && _isHotkeyActive)
+                    else if (isKeyUp)
                     {
                         if (key == Keys.Menu || key == Keys.LMenu || key == Keys.RMenu)
                         {
-                            HandleHotkeyRelease();
-                            return (IntPtr)1;
+                            if (_altMaskActive)
+                            {
+                                _altMaskActive = false;
+                                keybd_event(0xE8, 0, 0, UIntPtr.Zero);
+                                keybd_event(0xE8, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+                            }
+                            if (_isHotkeyActive)
+                            {
+                                HandleHotkeyRelease();
+                                return (IntPtr)1;
+                            }
                         }
-                        else if (key == Keys.ControlKey || key == Keys.LControlKey || key == Keys.RControlKey ||
+                        else if (_isHotkeyActive && (key == Keys.ControlKey || key == Keys.LControlKey || key == Keys.RControlKey ||
                             key == Keys.ShiftKey || key == Keys.LShiftKey || key == Keys.RShiftKey ||
-                            key == Keys.LWin || key == Keys.RWin)
+                            key == Keys.LWin || key == Keys.RWin))
                         {
                             HandleHotkeyRelease();
                         }
@@ -965,6 +1005,11 @@ namespace IndicFlowNativeHelper
             if (hwnd == IntPtr.Zero)
             {
                 try { hwnd = GetShellWindow(); } catch { }
+            }
+
+            if (hwnd != IntPtr.Zero && !IsOwnProcessWindow(hwnd))
+            {
+                _lastTargetHwnd = hwnd;
             }
 
             string app = GetProcessExecutableSafe(hwnd);
@@ -1177,28 +1222,39 @@ namespace IndicFlowNativeHelper
             if (textToPaste == null) textToPaste = "";
             textToPaste = FixMojibakeIfNeeded(textToPaste);
 
+            uint myThread = GetCurrentThreadId();
+            uint dummyPid;
+            uint targetThread = 0;
+            uint fgThread = 0;
+            bool attachedMy = false;
+            bool attachedFg = false;
+
             try
             {
-                // Ensure target window is in the foreground
                 IntPtr currentForeground = GetForegroundWindow();
+                if (_lastTargetHwnd == IntPtr.Zero && !IsOwnProcessWindow(currentForeground) && currentForeground != IntPtr.Zero)
+                {
+                    _lastTargetHwnd = currentForeground;
+                }
+
                 if (_lastTargetHwnd != IntPtr.Zero)
                 {
-                    uint myThread = GetCurrentThreadId();
-                    uint dummyPid;
-                    uint targetThread = GetWindowThreadProcessId(_lastTargetHwnd, out dummyPid);
-                    uint fgThread = GetWindowThreadProcessId(currentForeground, out dummyPid);
+                    targetThread = GetWindowThreadProcessId(_lastTargetHwnd, out dummyPid);
+                    fgThread = (currentForeground != IntPtr.Zero) ? GetWindowThreadProcessId(currentForeground, out dummyPid) : 0;
 
-                    if (myThread != targetThread && targetThread != 0) AttachThreadInput(myThread, targetThread, true);
-                    if (fgThread != 0 && fgThread != targetThread) AttachThreadInput(fgThread, targetThread, true);
+                    if (myThread != targetThread && targetThread != 0) attachedMy = AttachThreadInput(myThread, targetThread, true);
+                    if (fgThread != 0 && fgThread != targetThread) attachedFg = AttachThreadInput(fgThread, targetThread, true);
 
                     SetForegroundWindow(_lastTargetHwnd);
                     BringWindowToTop(_lastTargetHwnd);
-
-                    if (myThread != targetThread && targetThread != 0) AttachThreadInput(myThread, targetThread, false);
-                    if (fgThread != 0 && fgThread != targetThread) AttachThreadInput(fgThread, targetThread, false);
-
                     Thread.Sleep(60);
                 }
+
+                // Settle and cancel any active menu bar state in VS Code / Antigravity IDE
+                keybd_event(0x1B, 0x01, 0, UIntPtr.Zero);
+                Thread.Sleep(10);
+                keybd_event(0x1B, 0x01, KEYEVENTF_KEYUP, UIntPtr.Zero);
+                Thread.Sleep(20);
 
                 uint cfCanInclude = RegisterClipboardFormat("CanIncludeInClipboardHistory");
                 uint cfCanUpload = RegisterClipboardFormat("CanUploadToCloudClipboard");
@@ -1273,8 +1329,9 @@ namespace IndicFlowNativeHelper
                 }
 
                 // Settle clipboard notification before sending keys
-                Thread.Sleep(50);
+                Thread.Sleep(40);
 
+                // Send paste keys WHILE STILL ATTACHED to target thread
                 SendCtrlV();
 
                 return true;
@@ -1283,6 +1340,11 @@ namespace IndicFlowNativeHelper
             {
                 LogStderr("Paste injection failed: " + ex.Message);
                 return false;
+            }
+            finally
+            {
+                if (attachedMy && targetThread != 0) AttachThreadInput(myThread, targetThread, false);
+                if (attachedFg && fgThread != 0 && targetThread != 0) AttachThreadInput(fgThread, targetThread, false);
             }
         }
 
@@ -1297,13 +1359,13 @@ namespace IndicFlowNativeHelper
 
             // 1. Synthesize Ctrl+V via keybd_event (direct raw input queue dispatch for Chromium / Electron / Antigravity IDE)
             keybd_event((byte)VK_CONTROL, 0x1D, 0, UIntPtr.Zero);
-            Thread.Sleep(25);
+            Thread.Sleep(30);
             keybd_event((byte)VK_V, 0x2F, 0, UIntPtr.Zero);
-            Thread.Sleep(35);
+            Thread.Sleep(40);
             keybd_event((byte)VK_V, 0x2F, KEYEVENTF_KEYUP, UIntPtr.Zero);
             Thread.Sleep(20);
             keybd_event((byte)VK_CONTROL, 0x1D, KEYEVENTF_KEYUP, UIntPtr.Zero);
-            Thread.Sleep(15);
+            Thread.Sleep(20);
 
             // 2. Also send via SendInput with explicit scan codes as dual guarantee
             INPUT[] inputs = new INPUT[4];
@@ -1334,6 +1396,11 @@ namespace IndicFlowNativeHelper
         {
             if ((GetAsyncKeyState(vk) & 0x8000) != 0)
             {
+                if (vk == VK_MENU)
+                {
+                    keybd_event(0xE8, 0, 0, UIntPtr.Zero);
+                    keybd_event(0xE8, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+                }
                 keybd_event((byte)vk, (byte)MapVirtualKey(vk, 0), KEYEVENTF_KEYUP, UIntPtr.Zero);
                 INPUT up = new INPUT();
                 up.type = INPUT_KEYBOARD;

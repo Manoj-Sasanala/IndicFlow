@@ -367,7 +367,7 @@ class STTService extends EventEmitter {
       throw new Error('GNANI_API_KEY is missing');
     }
 
-    const rawLang = options.language || this.gnaniLanguage || 'indic-auto';
+    const rawLang = options.language || this.gnaniLanguage || 'en-IN';
     const targetLang = this._normalizeGnaniLanguageCode(rawLang);
 
     const formData = new FormData();

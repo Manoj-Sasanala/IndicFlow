@@ -212,7 +212,7 @@ class DictationCoordinator extends EventEmitter {
           : Buffer.from(audioOrSimulatedText.data || audioOrSimulatedText);
         console.log(`[Coordinator] Transcribing real audio buffer (${buffer.length} bytes)...`);
         const activeModelSetting = this.db ? this.db.getSetting('model', '') : '';
-        const activeLanguageSetting = this.db ? this.db.getSetting('gnaniLanguage', 'indic-auto') : 'indic-auto';
+        const activeLanguageSetting = this.db ? this.db.getSetting('gnaniLanguage', 'en-IN') : 'en-IN';
         const providerOverride = (activeModelSetting === 'local-offline' || activeModelSetting === 'local-whisper') ? 'local_server' : undefined;
         const asrResult = await this.sttService.transcribe(buffer, { 
           provider: providerOverride,

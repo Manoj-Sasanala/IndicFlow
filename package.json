@@ -30,6 +30,8 @@
   "dependencies": {},
   "devDependencies": {
     "electron": "40.10.2"
+  },
+  "allowScripts": {
+    "electron@40.10.2": true
   }
 }
-

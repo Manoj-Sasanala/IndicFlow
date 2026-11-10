@@ -1,0 +1,34 @@
+{
+  "name": "indic-flow",
+  "version": "1.0.0",
+  "description": "IndicFlow — Ultra-low latency system-wide AI voice dictation and workflow companion for Windows, powered natively by Gnani AI Prisma STT for Indian languages & Hinglish.",
+  "main": "src/main/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test_desktop.mjs",
+    "test:services": "node test_services.mjs",
+    "test:native": "node native/test_helper.mjs",
+    "test:integration": "node test_integration.mjs",
+    "test:gnani": "node test_gnani_live.mjs",
+    "test:all": "node test_desktop.mjs && node test_services.mjs && node test_integration.mjs"
+  },
+  "keywords": [
+    "indicflow",
+    "gnani-ai",
+    "prisma-stt",
+    "voice-ai",
+    "speech-to-text",
+    "indic-languages",
+    "hinglish",
+    "dictation",
+    "electron",
+    "windows"
+  ],
+  "author": "Manoj Sasanala",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "40.10.2"
+  }
+}

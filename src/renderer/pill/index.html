@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline';">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flow Pill</title>
+  <link rel="stylesheet" href="pill.css">
+</head>
+<body>
+  <div id="pill-container" class="pill state-idle">
+    <!-- State 1: Listening -->
+    <div class="pill-view view-listening" id="view-listening">
+      <div class="mic-indicator">
+        <span class="pulsing-halo"></span>
+        <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="22"/>
+        </svg>
+      </div>
+
+      <!-- Real-time dynamic audio visualizer waveform -->
+      <div class="waveform-container" id="waveform">
+        <span class="bar bar-1"></span>
+        <span class="bar bar-2"></span>
+        <span class="bar bar-3"></span>
+        <span class="bar bar-4"></span>
+        <span class="bar bar-5"></span>
+        <span class="bar bar-6"></span>
+        <span class="bar bar-7"></span>
+      </div>
+
+      <div class="pill-timer" id="pill-timer">0:00</div>
+
+      <!-- Action buttons -->
+      <div class="pill-actions">
+        <button id="btn-stop-dictation" class="pill-btn done-btn" title="Complete dictation">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- State 2: Processing -->
+    <div class="pill-view view-processing" id="view-processing">
+      <div class="shimmer-layer"></div>
+      <div class="spinner-ring"></div>
+      <span class="processing-text">Transcribing...</span>
+    </div>
+
+    <!-- State 3: Success -->
+    <div class="pill-view view-success" id="view-success">
+      <div class="success-icon-wrap">
+        <svg class="checkmark-svg" viewBox="0 0 52 52">
+          <circle class="checkmark-circle" cx="26" cy="26" r="23" fill="none"/>
+          <path class="checkmark-check" fill="none" d="M14 27l8 8 16-16"/>
+        </svg>
+      </div>
+      <span class="success-text" id="success-preview">Pasted</span>
+    </div>
+  </div>
+
+  <script src="../audio/AudioEngine.js"></script>
+  <script src="pill.js"></script>
+</body>
+</html>

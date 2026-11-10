@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Secrets & Environment
+.env
+*.env
+!.env.example
+
+# Runtime databases & caches
+*.sqlite*
+*.db*
+*.log
+.cache/
+test_user_data/
+*.tmp
+*.wav
+
+# Build outputs
+dist/
+build/
+*.obj
+*.pdb
+*.ilk
+*.exp
+
+# Large binary models
+native/whisper/*.bin
+*.gguf
+
+# OS metadata
+.DS_Store
+Thumbs.db
+Desktop.ini

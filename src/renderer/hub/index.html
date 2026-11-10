@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline';">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wispr Flow Hub</title>
+  <link rel="stylesheet" href="hub.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Custom Window Titlebar -->
+    <header class="titlebar">
+      <div class="titlebar-drag-region">
+        <div class="app-brand">
+          <div class="brand-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="22"/>
+            </svg>
+          </div>
+          <span class="brand-title">Wispr Flow</span>
+          <span class="brand-badge">Desktop</span>
+        </div>
+      </div>
+      <div class="window-controls">
+        <button id="btn-minimize" class="win-btn" title="Minimize">
+          <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <button id="btn-maximize" class="win-btn" title="Maximize">
+          <svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>
+        </button>
+        <button id="btn-close" class="win-btn win-close" title="Close">
+          <svg viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="main-body">
+      <!-- Sidebar Navigation -->
+      <aside class="sidebar">
+        <div class="quick-action">
+          <button id="btn-toggle-dictation" class="btn-primary-glow">
+            <span class="mic-dot"></span>
+            <span id="btn-dictation-label">Start Dictation</span>
+          </button>
+        </div>
+
+        <nav class="nav-menu">
+          <button class="nav-item active" data-tab="history">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span>History</span>
+          </button>
+          <button class="nav-item" data-tab="dictionary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+              <path d="M6 6h10"/>
+              <path d="M6 10h10"/>
+            </svg>
+            <span>Dictionary</span>
+          </button>
+          <button class="nav-item" data-tab="notes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+            <span>Notes</span>
+          </button>
+          <button class="nav-item" data-tab="settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+            <span>Settings</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="helper-status" id="helper-status-badge">
+            <span class="status-indicator-dot online"></span>
+            <span class="status-text" id="helper-status-text">Helper Connected</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Content Area -->
+      <main class="content-viewport">
+        <!-- 1. History Tab -->
+        <section id="tab-history" class="tab-panel active">
+          <div class="panel-header">
+            <div class="panel-title-area">
+              <h2>Dictation History</h2>
+              <span class="sub-caption">All voice inputs formatted and pasted across your apps</span>
+            </div>
+            <div class="panel-actions">
+              <button id="btn-clear-history" class="btn-secondary danger-hover">Clear History</button>
+            </div>
+          </div>
+
+          <div class="search-bar-wrap">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" id="history-search-input" placeholder="Search past transcripts, apps, or phrases...">
+          </div>
+
+          <div class="history-list-container" id="history-list">
+            <!-- Dynamically populated -->
+          </div>
+        </section>
+
+        <!-- 2. Dictionary Tab -->
+        <section id="tab-dictionary" class="tab-panel">
+          <div class="panel-header">
+            <div class="panel-title-area">
+              <h2>User Dictionary</h2>
+              <span class="sub-caption">Automatically expand acronyms, tech jargon, and custom snippets</span>
+            </div>
+            <div class="panel-actions">
+              <button id="btn-add-word-modal" class="btn-primary">+ Add Entry</button>
+            </div>
+          </div>
+
+          <!-- Add Word Card -->
+          <div class="card add-entry-card" id="add-entry-card">
+            <h3>Add New Dictionary Replacement</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="dict-phrase">When I say (Phrase):</label>
+                <input type="text" id="dict-phrase" placeholder="e.g. k8s, brb, Wispr">
+              </div>
+              <div class="form-group">
+                <label for="dict-replacement">Replace with:</label>
+                <input type="text" id="dict-replacement" placeholder="e.g. Kubernetes, be right back, Wispr Flow">
+              </div>
+              <button id="btn-save-dict-entry" class="btn-primary align-end">Save</button>
+            </div>
+          </div>
+
+          <div class="dictionary-table-container">
+            <table class="flow-table">
+              <thead>
+                <tr>
+                  <th>Spoken Phrase</th>
+                  <th>Expanded Text</th>
+                  <th>Frequency Used</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="dictionary-list">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 3. Notes Tab -->
+        <section id="tab-notes" class="tab-panel">
+          <div class="panel-header">
+            <div class="panel-title-area">
+              <h2>Voice Notes</h2>
+              <span class="sub-caption">Captured thoughts and meeting memos</span>
+            </div>
+            <div class="panel-actions">
+              <button id="btn-new-note" class="btn-primary">+ New Note</button>
+            </div>
+          </div>
+
+          <div class="notes-layout">
+            <div class="notes-list" id="notes-list">
+              <!-- Note items -->
+            </div>
+            <div class="note-editor" id="note-editor">
+              <input type="text" id="note-title-input" class="note-title-field" placeholder="Note Title...">
+              <textarea id="note-content-input" class="note-content-field" placeholder="Start typing or dictate notes here..."></textarea>
+              <div class="note-editor-footer">
+                <span id="note-save-status" class="save-indicator">Saved</span>
+                <button id="btn-delete-note" class="btn-secondary danger-hover">Delete Note</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. Settings Tab -->
+        <section id="tab-settings" class="tab-panel">
+          <div class="panel-header">
+            <div class="panel-title-area">
+              <h2>Settings & Preferences</h2>
+              <span class="sub-caption">Configure shortcuts, dictation behavior, and audio devices</span>
+            </div>
+          </div>
+
+          <div class="settings-grid">
+            <div class="setting-item card">
+              <div class="setting-info">
+                <h4>Global Dictation Hotkey</h4>
+                <p>Trigger dictation from anywhere in the OS</p>
+              </div>
+              <div class="setting-control">
+                <select id="setting-hotkey" class="flow-select">
+                  <option value="Double-Fn / CapsLock">Double-tap Fn / CapsLock</option>
+                  <option value="Ctrl+Space">Ctrl + Space</option>
+                  <option value="Alt+D">Alt + D</option>
+                  <option value="F8">F8</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="setting-item card">
+              <div class="setting-info">
+                <h4>Activation Mode</h4>
+                <p>Hold while speaking or tap once to toggle</p>
+              </div>
+              <div class="setting-control">
+                <select id="setting-activationMode" class="flow-select">
+                  <option value="push_to_talk">Push-to-Talk (Hold Hotkey)</option>
+                  <option value="toggle">Toggle (Tap to start / stop)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="setting-item card highlight-card" style="border: 1px solid rgba(124, 58, 237, 0.4); background: rgba(124, 58, 237, 0.06);">
+              <div class="setting-info">
+                <h4 style="display: flex; align-items: center; gap: 8px;">
+                  <span>Gnani AI API Key (Prisma STT)</span>
+                  <span class="badge" style="background:#7c3aed; color:#fff; font-size:10px; font-weight:600; padding:2px 8px; border-radius:12px;">Primary Voice Engine</span>
+                </h4>
+                <p>Speech-to-text API key from app.gnani.ai (Vachana AI platform)</p>
+              </div>
+              <div class="setting-control">
+                <input type="password" id="setting-gnaniApiKey" class="flow-input" style="background:#181920; border:1px solid #7c3aed; color:#fff; padding:8px 12px; border-radius:6px; width:220px;" placeholder="vach_...">
+              </div>
+            </div>
+
+            <div class="setting-item card">
+              <div class="setting-info">
+                <h4>Gnani AI Language Mode</h4>
+                <p>Select language for Prisma speech recognition</p>
+              </div>
+              <div class="setting-control">
+                <select id="setting-gnaniLanguage" class="flow-select">
+                  <option value="indic-auto">Indic Auto-Detect (Hindi / Hinglish / English)</option>
+                  <option value="hi">Hindi (hi-IN)</option>
+                  <option value="en">Indian English (en-IN)</option>
+                  <option value="te">Telugu (te-IN)</option>
+                  <option value="ta">Tamil (ta-IN)</option>
+                  <option value="kn">Kannada (kn-IN)</option>
+                  <option value="mr">Marathi (mr-IN)</option>
+                  <option value="bn">Bengali (bn-IN)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="setting-item card">
+              <div class="setting-info">
+                <h4>Speech-to-Text Model</h4>
+                <p>Cloud or local neural transcription engine</p>
+              </div>
+              <div class="setting-control">
+                <select id="setting-model" class="flow-select">
+                  <option value="prisma-v3.0" selected>Gnani AI Prisma v3.0 (Indic & Hinglish Voice AI)</option>
+                  <option value="prisma-v2.5">Gnani AI Prisma v2.5 (Fast)</option>
+                  <option value="gemini-3.5-flash">Google Gemini 3.5 Flash (Accurate & Fast ~2s)</option>
+                  <option value="whisper-large-v3-turbo">Groq Whisper Large v3 Turbo (Instant ~200ms)</option>
+                  <option value="gemini-3.5-flash-lite">Google Gemini 3.5 Flash-Lite</option>
+                  <option value="whisper-1">OpenAI Whisper (Cloud)</option>
+                  <option value="local-whisper">Local Whisper Server (Offline)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="setting-item card">
+              <div class="setting-info">
+                <h4>Gemini API Key</h4>
+                <p>Google AI Studio API key used for verbatim speech transcription</p>
+              </div>
+              <div class="setting-control">
+                <input type="password" id="setting-geminiApiKey" class="flow-input" style="background:#181920; border:1px solid #2e303e; color:#fff; padding:8px 12px; border-radius:6px; width:220px;" placeholder="AIzaSy...">
+              </div>
+            </div>
+
+            <div class="setting-item card">
+              <div class="setting-info">
+                <h4>Groq API Key (Optional)</h4>
+                <p>Free sub-200ms Whisper Large v3 Turbo (keys at console.groq.com)</p>
+              </div>
+              <div class="setting-control">
+                <input type="password" id="setting-groqApiKey" class="flow-input" style="background:#181920; border:1px solid #2e303e; color:#fff; padding:8px 12px; border-radius:6px; width:220px;" placeholder="gsk_...">
+              </div>
+            </div>
+
+            <div class="setting-item card">
+              <div class="setting-info">
+                <h4>Caret Tracking & Context Awareness</h4>
+                <p>Extract active application & caret position for targeted floating pill</p>
+              </div>
+              <div class="setting-control">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="setting-caretTracking" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="setting-item card">
+              <div class="setting-info">
+                <h4>Local Database Engine</h4>
+                <p>Node.js 24 SQLite (DatabaseSync) with WAL mode enabled</p>
+              </div>
+              <div class="setting-control">
+                <span class="db-badge">Active &bull; WAL Enabled</span>
+              </div>
+            </div>
+
+            <div class="setting-item card">
+              <div class="setting-info">
+                <h4>Offline Whisper Engine (whisper.cpp)</h4>
+                <p>100% offline on-device transcription with zero network latency</p>
+              </div>
+              <div class="setting-control">
+                <span id="local-whisper-badge" class="db-badge" style="background: rgba(255,255,255,0.08); color: #8e90a0;">Checking...</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="hub.js"></script>
+</body>
+</html>

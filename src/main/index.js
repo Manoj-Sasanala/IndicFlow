@@ -108,9 +108,23 @@ function initHelperSupervisor() {
     helperPath: path.resolve(__dirname, '../../native/FlowHelper.exe')
   });
 
+  const syncHotkeyToHelper = () => {
+    if (!helper || !db) return;
+    const hotkey = db.getSetting('hotkey', 'Alt+D');
+    helper.sendRequest('SetHotkey', { hotkey }).then(() => {
+      console.log(`[Flow Main] Successfully configured helper hotkey: ${hotkey}`);
+    }).catch((err) => {
+      console.warn(`[Flow Main] Could not configure helper hotkey (${hotkey}):`, err.message);
+    });
+  };
+
+  helper.on('ready', syncHotkeyToHelper);
   helper.on('status', (status) => {
     console.log('[Flow Main] Helper supervisor status:', status);
     windowManager?.broadcast('flow:helper-status', status);
+    if (status.ready) {
+      syncHotkeyToHelper();
+    }
   });
 
   helper.start();
@@ -197,23 +211,39 @@ function initTray() {
 }
 
 function registerGlobalShortcuts() {
-  // Register fallback desktop shortcuts
   try {
-    globalShortcut.register('CommandOrControl+Alt+Space', () => {
-      if (coordinator.state === 'idle') {
-        coordinator.startDictation();
-      } else {
-        coordinator.requestStopFromRenderer();
-      }
-    });
+    globalShortcut.unregisterAll();
 
-    globalShortcut.register('Alt+D', () => {
-      if (coordinator.state === 'idle') {
-        coordinator.startDictation();
-      } else {
-        coordinator.requestStopFromRenderer();
-      }
-    });
+    const configuredHotkey = db?.getSetting('hotkey', 'Alt+D') || 'Alt+D';
+    let electronAccelerator = configuredHotkey;
+    if (configuredHotkey === 'Double-Fn / CapsLock') {
+      electronAccelerator = 'CommandOrControl+Alt+Space';
+    }
+
+    try {
+      globalShortcut.register(electronAccelerator, () => {
+        if (coordinator.state === 'idle') {
+          coordinator.startDictation();
+        } else {
+          coordinator.requestStopFromRenderer();
+        }
+      });
+      console.log(`[Flow Main] Registered fallback Electron accelerator: ${electronAccelerator}`);
+    } catch (e) {
+      console.warn(`[Flow Main] Could not register ${electronAccelerator} in Electron:`, e.message);
+    }
+
+    if (electronAccelerator !== 'CommandOrControl+Alt+Space') {
+      try {
+        globalShortcut.register('CommandOrControl+Alt+Space', () => {
+          if (coordinator.state === 'idle') {
+            coordinator.startDictation();
+          } else {
+            coordinator.requestStopFromRenderer();
+          }
+        });
+      } catch {}
+    }
   } catch (err) {
     console.warn('[Flow Main] Could not register global shortcuts:', err.message);
   }
@@ -282,6 +312,12 @@ function registerIpcHandlers() {
 
   ipcMain.handle('flow:set-setting', (_event, key, value) => {
     db.setSetting(key, value);
+    if (key === 'hotkey') {
+      helper?.sendRequest('SetHotkey', { hotkey: value }).catch((err) => {
+        console.warn('[Flow Main] Failed to update hotkey in helper:', err.message);
+      });
+      registerGlobalShortcuts();
+    }
     // Dynamically refresh STT service credentials
     if (coordinator?.sttService) {
       if (key === 'gnaniApiKey') coordinator.sttService.updateCredentials({ gnaniApiKey: value });

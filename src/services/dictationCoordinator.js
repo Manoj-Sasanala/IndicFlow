@@ -66,12 +66,25 @@ class DictationCoordinator extends EventEmitter {
     this.helper.on('HotkeyTriggered', async (data) => {
       console.log('[Coordinator] Hotkey triggered from helper:', data);
       const mode = this.db ? this.db.getSetting('activationMode', 'push_to_talk') : 'push_to_talk';
-      if (mode === 'push_to_talk') {
+      const triggerType = data?.triggerType || 'press';
+
+      if (triggerType === 'hold_end') {
+        if (mode === 'push_to_talk' && this.state === 'listening') {
+          console.log('[Coordinator] Hold ended, requesting audio stop');
+          this.requestStopFromRenderer();
+        }
+        return;
+      }
+
+      if (triggerType === 'hold_start') {
         if (this.state === 'idle') {
           await this.startDictation();
         }
-      } else {
-        // Toggle mode
+        return;
+      }
+
+      // Tap / Press (or DoubleTap)
+      if (triggerType === 'press') {
         if (this.state === 'idle') {
           await this.startDictation();
         } else if (this.state === 'listening') {
@@ -81,6 +94,7 @@ class DictationCoordinator extends EventEmitter {
     });
 
     this.helper.on('HotkeyReleased', async () => {
+      console.log('[Coordinator] Hotkey released from helper');
       const mode = this.db ? this.db.getSetting('activationMode', 'push_to_talk') : 'push_to_talk';
       if (mode === 'push_to_talk' && this.state === 'listening') {
         this.requestStopFromRenderer();
@@ -210,9 +224,10 @@ class DictationCoordinator extends EventEmitter {
       rawAsr = '';
     }
 
-    // Never paste fake/sample text if silence or error occurs
-    if (!rawAsr || rawAsr.trim().length === 0) {
-      console.log('[Coordinator] No speech recognized (silence or error). Aborting paste without inserting fake text.');
+    // Never paste fake/sample text if silence, pure timestamps (e.g. 00:00, 00:01), or error occurs
+    const isHallucinatedTimestamp = /^(?:\[?\d{1,2}:\d{2}(?:\.\d+)?\]?\s*)+$/.test(rawAsr.trim());
+    if (!rawAsr || rawAsr.trim().length === 0 || isHallucinatedTimestamp) {
+      console.log('[Coordinator] No speech recognized (silence, timestamp hallucination, or error). Aborting paste without inserting fake text.');
       this._setState('idle', { reason: 'no_speech' });
       if (this.windowManager) {
         this.windowManager.hidePill();

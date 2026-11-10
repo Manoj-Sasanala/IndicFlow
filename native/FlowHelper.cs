@@ -227,12 +227,12 @@ namespace IndicFlowNativeHelper
         private static WinEventDelegate _winEventProc;
         private static MessageWindow _msgWindow;
 
-        private static bool _reqCtrl = true;
-        private static bool _reqShift = true;
-        private static bool _reqAlt = false;
+        private static bool _reqCtrl = false;
+        private static bool _reqShift = false;
+        private static bool _reqAlt = true;
         private static bool _reqWin = false;
-        private static Keys _triggerKey = Keys.Space;
-        private static string _currentHotkeyStr = "Ctrl+Shift+Space";
+        private static Keys _triggerKey = Keys.D;
+        private static string _currentHotkeyStr = "Alt+D";
 
         private static bool _isHotkeyActive = false;
         private static bool _isHolding = false;
@@ -255,8 +255,12 @@ namespace IndicFlowNativeHelper
         [STAThread]
         private static void Main(string[] args)
         {
-            Console.OutputEncoding = Encoding.UTF8;
-            Console.InputEncoding = Encoding.UTF8;
+            try
+            {
+                Console.OutputEncoding = Encoding.UTF8;
+                Console.InputEncoding = Encoding.UTF8;
+            }
+            catch { }
 
             TryInitFd3();
 
@@ -768,6 +772,11 @@ namespace IndicFlowNativeHelper
             {
                 _isHolding = false;
                 EmitHotkeyEvent("hold_end", false);
+                SendJson(new Dictionary<string, object>
+                {
+                    { "event", "HotkeyReleased" },
+                    { "shortcut", _currentHotkeyStr }
+                });
             }
             else if (!_isDoubleTap)
             {

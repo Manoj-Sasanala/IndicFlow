@@ -207,11 +207,15 @@ class STTService extends EventEmitter {
 
       try {
         const result = await this._executeProvider(currentProvider, wavBuffer, options);
+        let outputText = (result.text || '').trim();
+        if (/^(?:\[?\d{1,2}:\d{2}(?:\.\d+)?\]?\s*)+$/.test(outputText)) {
+          outputText = '';
+        }
         const latencyMs = Date.now() - startTime;
 
         return {
-          text: result.text,
-          rawAsrText: result.text,
+          text: outputText,
+          rawAsrText: outputText,
           provider: currentProvider,
           model: result.model,
           latencyMs,
@@ -329,24 +333,28 @@ class STTService extends EventEmitter {
    */
   _normalizeGnaniLanguageCode(lang) {
     if (!lang) return 'indic-auto';
-    const clean = String(lang).trim().toLowerCase();
+    const clean = String(lang).trim();
+    const lower = clean.toLowerCase();
+    if (lower === 'indic-auto' || lower === 'auto') return 'indic-auto';
     const map = {
-      'hi': 'hi-IN',
-      'te': 'te-IN',
-      'ta': 'ta-IN',
-      'kn': 'kn-IN',
-      'mr': 'mr-IN',
-      'bn': 'bn-IN',
-      'gu': 'gu-IN',
-      'pa': 'pa-IN',
-      'ml': 'ml-IN',
-      'as': 'as-IN',
-      'en': 'en-IN',
-      'indic-auto': 'indic-auto',
-      'auto': 'indic-auto'
+      'hi': 'hi-IN', 'hi-in': 'hi-IN',
+      'te': 'te-IN', 'te-in': 'te-IN',
+      'ta': 'ta-IN', 'ta-in': 'ta-IN',
+      'kn': 'kn-IN', 'kn-in': 'kn-IN',
+      'mr': 'mr-IN', 'mr-in': 'mr-IN',
+      'bn': 'bn-IN', 'bn-in': 'bn-IN',
+      'gu': 'gu-IN', 'gu-in': 'gu-IN',
+      'pa': 'pa-IN', 'pa-in': 'pa-IN',
+      'ml': 'ml-IN', 'ml-in': 'ml-IN',
+      'as': 'as-IN', 'as-in': 'as-IN',
+      'ur': 'ur-IN', 'ur-in': 'ur-IN',
+      'or': 'or-IN', 'or-in': 'or-IN',
+      'en': 'en-IN', 'en-in': 'en-IN'
     };
-    if (map[clean]) return map[clean];
-    if (clean.includes('-in')) return clean;
+    if (map[lower]) return map[lower];
+    if (lower.endsWith('-in')) {
+      return lower.slice(0, -3) + '-IN';
+    }
     return clean;
   }
 

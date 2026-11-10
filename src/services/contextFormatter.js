@@ -427,8 +427,8 @@ class ContextFormatter {
       result = result.replace(reg, noun);
     }
 
-    // Ensure closing punctuation if it appears to be a complete sentence
-    const hasPunctuation = /[.!?]$/.test(result);
+    // Ensure closing punctuation if it appears to be a complete sentence (including Indic danda \u0964, \u0965, \u06D4)
+    const hasPunctuation = /[.!?।॥۔]$/u.test(result);
     const hasBullets = result.startsWith('-') || result.startsWith('•');
 
     if (!hasPunctuation && !hasBullets && result.length > 5) {

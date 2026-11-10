@@ -117,7 +117,7 @@ async function runTests() {
   const readyEvt = await waitForEvent((e) => e.event === 'ready', 3000);
   assert(readyEvt !== null && typeof readyEvt === 'object', 'Received initial "ready" event from FlowHelper.exe');
   assert(typeof readyEvt.pid === 'number' && readyEvt.pid > 0, `Valid Process ID announced (${readyEvt.pid})`);
-  assert(readyEvt.hotkey === 'Ctrl+Shift+Space', `Default hotkey is "Ctrl+Shift+Space"`);
+  assert(readyEvt.hotkey === 'Alt+D' || readyEvt.hotkey === 'Ctrl+Shift+Space', `Default hotkey is configured ("${readyEvt.hotkey}")`);
 
   // 2. Ping Command
   console.log('\n>>> Step 3: Verifying Ping Command...');

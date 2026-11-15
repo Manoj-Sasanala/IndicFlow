@@ -34,6 +34,7 @@ namespace IndicFlowNativeHelper
 
         private const uint INPUT_KEYBOARD = 1;
         private const uint KEYEVENTF_KEYUP = 0x0002;
+        private const uint KEYEVENTF_SCANCODE = 0x0008;
 
         private const ushort VK_SHIFT = 0x10;
         private const ushort VK_CONTROL = 0x11;
@@ -1377,7 +1378,9 @@ namespace IndicFlowNativeHelper
             input.type = INPUT_KEYBOARD;
             input.mkhi.ki.wVk = vk;
             input.mkhi.ki.wScan = scan;
-            input.mkhi.ki.dwFlags = up ? KEYEVENTF_KEYUP : 0;
+            // SCANCODE: without it Windows ignores wScan. Qt targets (Telegram)
+            // read the scan code, so a Vk-only Ctrl+V never registers there.
+            input.mkhi.ki.dwFlags = (up ? KEYEVENTF_KEYUP : 0) | (scan != 0 ? KEYEVENTF_SCANCODE : 0);
             SendInput(1, new INPUT[] { input }, Marshal.SizeOf(typeof(INPUT)));
         }
 

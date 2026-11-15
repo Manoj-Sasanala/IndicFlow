@@ -831,6 +831,13 @@ namespace IndicFlowNativeHelper
                                         _isDoubleTap = false;
                                         _isHolding = false;
                                         _hotkeyDownTime = now;
+
+                                        // Announce the press on key-down so capture opens immediately.
+                                        // Waiting for the hold timer cost the user HOLD_THRESHOLD_MS of
+                                        // speech on every single press; the timer now only classifies
+                                        // hold vs tap for the release.
+                                        EmitHotkeyEvent("hold_start", false);
+
                                         _holdTimer.Change(HOLD_THRESHOLD_MS, Timeout.Infinite);
                                     }
                                 }
@@ -882,10 +889,10 @@ namespace IndicFlowNativeHelper
 
         private static void OnHoldTimerElapsed(object state)
         {
+            // Classification only. The capture already started on key-down.
             if (_isHotkeyActive && !_isHolding && !_isDoubleTap)
             {
                 _isHolding = true;
-                EmitHotkeyEvent("hold_start", false);
             }
         }
 

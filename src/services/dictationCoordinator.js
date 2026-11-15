@@ -77,7 +77,10 @@ class DictationCoordinator extends EventEmitter {
       }
 
       if (triggerType === 'hold_start') {
-        if (this.state === 'idle') {
+        // Fires on key-down now, so capture must begin immediately. Only
+        // push-to-talk acts on it: in toggle mode the session is driven by the
+        // tap ('press') event, exactly as before.
+        if (mode === 'push_to_talk' && this.state === 'idle') {
           await this.startDictation();
         }
         return;
@@ -87,7 +90,10 @@ class DictationCoordinator extends EventEmitter {
       if (triggerType === 'press') {
         if (this.state === 'idle') {
           await this.startDictation();
-        } else if (this.state === 'listening') {
+        } else if (this.state === 'listening' && mode !== 'push_to_talk') {
+          // In push-to-talk a short tap still emits 'press' after capture
+          // already started on key-down; only 'hold_end' may stop that session,
+          // otherwise a quick tap would truncate itself.
           this.requestStopFromRenderer();
         }
       }

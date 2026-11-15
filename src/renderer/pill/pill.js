@@ -21,20 +21,24 @@ let visualizerLoopId = null;
 function initAudioCapture() {
   if (audioEngine && audioEngine.isRecording) return;
 
-  // @ts-ignore
-  audioEngine = new AudioEngine({
-    workletPath: '../audio/recorderWorklet.js',
-    silenceAutoStopMs: 3000, // 3.0-second pause buffer before auto-transcribing
-    onVolume: (metrics) => {
-      updateWaveformFromVolume(metrics);
-    },
-    onAutoStop: (wavBytes) => {
-      console.log('[Pill] VAD auto-stop triggered after speech silence');
-      if (window.flowAPI) {
-        window.flowAPI.stopDictation(wavBytes);
+  // One engine for the whole window: reusing it keeps the capture device warm,
+  // which removes the 270-540ms cold device open from every press.
+  if (!audioEngine) {
+    // @ts-ignore
+    audioEngine = new AudioEngine({
+      workletPath: '../audio/recorderWorklet.js',
+      silenceAutoStopMs: 3000, // 3.0-second pause buffer before auto-transcribing
+      onVolume: (metrics) => {
+        updateWaveformFromVolume(metrics);
+      },
+      onAutoStop: (wavBytes) => {
+        console.log('[Pill] VAD auto-stop triggered after speech silence');
+        if (window.flowAPI) {
+          window.flowAPI.stopDictation(wavBytes);
+        }
       }
-    }
-  });
+    });
+  }
 
   audioEngine.start().then(() => {
     startVisualizerLoop();
@@ -51,7 +55,6 @@ function stopAudioCaptureAndGetWav() {
     return null;
   }
   const wavBytes = audioEngine.stopAndGetWav();
-  audioEngine = null;
   resetWaveformBars();
   return wavBytes;
 }
@@ -198,6 +201,12 @@ if (window.flowAPI) {
       setPillState(stateInfo.state);
     }
   }).catch(() => {});
+
+  // Release the warm microphone when the window goes away
+  window.addEventListener('beforeunload', () => {
+    audioEngine?.dispose();
+    audioEngine = null;
+  });
 } else {
   // Standalone browser dev preview
   console.log('[Pill] Running in browser preview mode');

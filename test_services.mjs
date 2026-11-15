@@ -2,7 +2,9 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { EventEmitter } from 'node:events';
 import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
 
 // Import our services
 import {
@@ -531,6 +533,68 @@ await test('FlowDatabase History & Dictionary SQLite Persistence', async () => {
   const found = dictWords.find(w => w.phrase.toLowerCase() === 'dockerfile');
   assert.ok(found, 'Word should be persisted in SQLite Dictionary table');
   assert.equal(found.replacement, 'Dockerfile');
+});
+
+// -----------------------------------------------------------
+// 7. HOTKEY EVENT CONTRACT (capture must start on key-down)
+// -----------------------------------------------------------
+console.log('\n\x1b[36m▶ 7. Dictation Hotkey Event Contract\x1b[0m');
+
+const requireCjs = createRequire(import.meta.url);
+const { DictationCoordinator } = requireCjs('./src/services/dictationCoordinator.js');
+
+function makeCoordinator(mode, state = 'idle') {
+  const helper = new EventEmitter();
+  const calls = [];
+  // Prototype-only instance: the constructor builds network services we do not need here.
+  const c = Object.create(DictationCoordinator.prototype);
+  c.state = state;
+  c.windowManager = null;
+  c.helper = helper;
+  c.db = { getSetting: (key, fallback) => (key === 'activationMode' ? mode : fallback) };
+  c.startDictation = async () => { calls.push('start'); c.state = 'listening'; };
+  c.requestStopFromRenderer = () => { calls.push('stop'); };
+  c._bindHelperEvents();
+  return { c, helper, calls };
+}
+
+const settle = () => new Promise((r) => setImmediate(r));
+
+await test('push-to-talk: hold_start starts capture on key-down (no threshold wait)', async () => {
+  const { helper, calls } = makeCoordinator('push_to_talk');
+  helper.emit('HotkeyTriggered', { triggerType: 'hold_start' });
+  await settle();
+  assert.deepEqual(calls, ['start'], 'hold_start must start dictation immediately');
+});
+
+await test('push-to-talk: hold_end stops capture', async () => {
+  const { helper, calls } = makeCoordinator('push_to_talk', 'listening');
+  helper.emit('HotkeyTriggered', { triggerType: 'hold_end' });
+  await settle();
+  assert.deepEqual(calls, ['stop']);
+});
+
+await test('push-to-talk: a short tap does not truncate the started session', async () => {
+  const { helper, calls } = makeCoordinator('push_to_talk', 'listening');
+  helper.emit('HotkeyTriggered', { triggerType: 'press' });
+  await settle();
+  assert.deepEqual(calls, [], 'press must not stop a push-to-talk session started on key-down');
+});
+
+await test('toggle mode: hold_start is ignored, tap still starts and stops', async () => {
+  const start = makeCoordinator('toggle');
+  start.helper.emit('HotkeyTriggered', { triggerType: 'hold_start' });
+  await settle();
+  assert.deepEqual(start.calls, [], 'toggle mode must not start on key-down');
+
+  start.helper.emit('HotkeyTriggered', { triggerType: 'press' });
+  await settle();
+  assert.deepEqual(start.calls, ['start'], 'first tap starts listening');
+
+  const stop = makeCoordinator('toggle', 'listening');
+  stop.helper.emit('HotkeyTriggered', { triggerType: 'press' });
+  await settle();
+  assert.deepEqual(stop.calls, ['stop'], 'second tap stops listening');
 });
 
 // Cleanup temp files

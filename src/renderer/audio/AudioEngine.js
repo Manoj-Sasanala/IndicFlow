@@ -140,25 +140,33 @@ class AudioEngine {
     this.isAutoStopping = false;
 
     // 1. Acquire microphone stream with driver-safe fallback
-    try {
-      this.micStream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          channelCount: 1,
-          sampleRate: 16000,
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true
-        }
-      });
-    } catch {
-      this.micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    // Reuse a live stream: a cold device open measured 270-540ms on this machine
+    // and a warm one 20-40ms. That cold open is the first word the user loses.
+    const trackLive = this.micStream && this.micStream.getAudioTracks().some((t) => t.readyState === 'live');
+    if (!trackLive) {
+      this.micStream = null;
+      try {
+        this.micStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            channelCount: 1,
+            sampleRate: 16000,
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          }
+        });
+      } catch {
+        this.micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      }
     }
 
-    // 2. Initialize AudioContext at standard 16 kHz
-    this.audioCtx = new (window.AudioContext || window.webkitAudioContext)({
-      sampleRate: 16000,
-      latencyHint: 'interactive'
-    });
+    // 2. Initialize AudioContext at standard 16 kHz (kept open between dictations)
+    if (!this.audioCtx || this.audioCtx.state === 'closed') {
+      this.audioCtx = new (window.AudioContext || window.webkitAudioContext)({
+        sampleRate: 16000,
+        latencyHint: 'interactive'
+      });
+    }
 
     if (this.audioCtx.state === 'suspended') {
       await this.audioCtx.resume();
@@ -329,15 +337,9 @@ class AudioEngine {
       this.muteGainNode = null;
     }
 
-    if (this.micStream) {
-      this.micStream.getTracks().forEach((t) => t.stop());
-      this.micStream = null;
-    }
-
-    if (this.audioCtx && this.audioCtx.state !== 'closed') {
-      this.audioCtx.close().catch(() => {});
-      this.audioCtx = null;
-    }
+    // The mic stream and AudioContext are intentionally left open here: keeping
+    // the capture device warm is what makes the next dictation instant. Released
+    // in dispose() when the window unloads.
 
     if (this.pcmChunks.length === 0) {
       this.isAutoStopping = false;
@@ -419,6 +421,21 @@ class AudioEngine {
     this.isAutoStopping = false;
 
     return Array.from(uint8);
+  }
+
+  /**
+   * Releases the microphone and audio context. Call when the window unloads.
+   */
+  dispose() {
+    if (this.micStream) {
+      this.micStream.getTracks().forEach((t) => t.stop());
+      this.micStream = null;
+    }
+
+    if (this.audioCtx && this.audioCtx.state !== 'closed') {
+      this.audioCtx.close().catch(() => {});
+      this.audioCtx = null;
+    }
   }
 }
 

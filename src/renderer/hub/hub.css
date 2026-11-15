@@ -893,6 +893,28 @@ body {
   box-shadow: 0 0 0 2px var(--accent-purple-glow) !important;
 }
 
+/* Masked fields: allow selecting the text once revealed */
+.flow-input {
+  user-select: text;
+}
+
+.btn-reveal {
+  margin-left: 8px;
+  padding: 7px 12px;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-reveal:hover {
+  border-color: var(--accent-purple);
+  color: var(--text-primary);
+}
+
 .db-badge {
   font-size: 11.5px;
   font-weight: 600;

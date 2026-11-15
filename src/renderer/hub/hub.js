@@ -510,6 +510,17 @@ function bindSettingsEvents() {
   settingGnaniLanguage?.addEventListener('change', (e) => saveSetting('gnaniLanguage', e.target.value));
   settingGeminiApiKey?.addEventListener('change', (e) => saveSetting('geminiApiKey', e.target.value.trim()));
   settingGroqApiKey?.addEventListener('change', (e) => saveSetting('groqApiKey', e.target.value.trim()));
+
+  // Password inputs block Ctrl+C by design, so let the key be revealed for copying.
+  document.querySelectorAll('.btn-reveal').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const input = document.getElementById(btn.dataset.target);
+      if (!input) return;
+      const show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      btn.textContent = show ? 'Hide' : 'Show';
+    });
+  });
 }
 
 async function loadSettings() {

@@ -27,6 +27,9 @@
   ],
   "author": "Manoj Sasanala",
   "license": "MIT",
+  "engines": {
+    "node": ">=22.5.0"
+  },
   "dependencies": {},
   "devDependencies": {
     "electron": "42.11.18"

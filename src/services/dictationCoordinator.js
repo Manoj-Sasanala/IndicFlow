@@ -153,6 +153,7 @@ class DictationCoordinator extends EventEmitter {
 
     this.sessionStartTime = Date.now();
     this.activeSessionId = 'dict_' + Date.now();
+    this._awaitingRendererAudio = false;
 
     // Start capture immediately. getTextBoxInfo() can block for up to 500ms on a
     // cross-process UI Automation query, and the mic used to wait behind it.
@@ -206,12 +207,25 @@ class DictationCoordinator extends EventEmitter {
   async stopDictation(audioOrSimulatedText) {
     if (this.state !== 'listening') return;
 
-    // If no audio or simulated text is passed, request it from renderer if available
+    // If no audio or simulated text is passed, request it from renderer if available.
+    // Guarded by _awaitingRendererAudio: the renderer's null answer must abort
+    // the session, not re-request and ping-pong with the renderer forever.
     if (!audioOrSimulatedText && this.windowManager?.pillWindow && !this.windowManager.pillWindow.isDestroyed()) {
+      if (this._awaitingRendererAudio) {
+        console.warn('[Coordinator] Renderer returned no audio; aborting session instead of re-requesting');
+        this._awaitingRendererAudio = false;
+        this._setState('idle', { reason: 'no_audio' });
+        if (this.windowManager) {
+          this.windowManager.hidePill();
+        }
+        return;
+      }
       console.log('[Coordinator] stopDictation invoked without audio; delegating to renderer');
+      this._awaitingRendererAudio = true;
       this.requestStopFromRenderer();
       return;
     }
+    this._awaitingRendererAudio = false;
 
     if (this._isProcessingSession) return;
     this._isProcessingSession = true;

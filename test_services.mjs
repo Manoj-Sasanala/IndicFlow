@@ -622,6 +622,48 @@ await test('toggle mode: hold_start is ignored, tap still starts and stops', asy
   assert.deepEqual(stop.calls, ['stop'], 'second tap stops listening');
 });
 
+// -----------------------------------------------------------
+// 8. NULL-AUDIO STOP MUST TERMINATE (no main/renderer ping-pong)
+// -----------------------------------------------------------
+console.log('\n\x1b[36m▶ 8. Null-audio stop terminates the session\x1b[0m');
+
+function makeStoppingCoordinator() {
+  const helper = new EventEmitter();
+  let sends = 0;
+  let hides = 0;
+  const states = [];
+  // Prototype-only instance: the stop/abort path needs no network services.
+  const c = Object.create(DictationCoordinator.prototype);
+  c.state = 'listening';
+  c.sessionStartTime = Date.now();
+  c.windowManager = {
+    pillWindow: { isDestroyed: () => false, webContents: { send: () => { sends++; } } },
+    hidePill: () => { hides++; },
+    broadcast: () => {},
+  };
+  c.helper = helper;
+  c.db = { getSetting: () => '' };
+  c._setState = (s) => { states.push(s); c.state = s; };
+  return { c, get sends() { return sends; }, get hides() { return hides; }, states };
+}
+
+await test('stopDictation() with no audio delegates to renderer exactly once', async () => {
+  const t = makeStoppingCoordinator();
+  await t.c.stopDictation();
+  assert.equal(t.sends, 1, 'renderer must be asked exactly once');
+  assert.equal(t.c.state, 'listening', 'session stays open awaiting renderer audio');
+});
+
+await test("renderer's null answer aborts the session instead of re-requesting", async () => {
+  const t = makeStoppingCoordinator();
+  await t.c.stopDictation(); // first call: delegates to renderer
+  await t.c.stopDictation(null); // renderer's answer: nothing was captured
+  assert.equal(t.sends, 1, 'must NOT ask the renderer again (ping-pong)');
+  assert.equal(t.c.state, 'idle', 'session must end');
+  assert.deepEqual(t.states, ['idle']);
+  assert.equal(t.hides, 1, 'pill must hide');
+});
+
 // Cleanup temp files
 try {
   if (fs.existsSync(tempStoragePath)) fs.unlinkSync(tempStoragePath);

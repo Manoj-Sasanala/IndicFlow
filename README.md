@@ -23,7 +23,14 @@ Powered natively by **Gnani AI's Prisma STT (v3.0)** running on the high-perform
 - **🎯 System-Wide Windows Caret Tracking**:
   - A discreet, floating pill HUD dynamically positions itself right next to your active text caret across any application using Windows UI Automation (`UIAutomationCore`).
 - **⚡ Global Hotkey & Push-to-Talk**:
-  - Native C# input engine (`FlowHelper.exe`) supporting `Alt + D` (default) for zero-lag push-to-talk activation.
+  - Native C# input engine (`FlowHelper.exe`) supporting `Alt + D` (default) for push-to-talk activation. Capture starts on key-down; tap again (or release a hold) to stop.
+
+## ⚡ Performance (measured on a dev machine, i7/16GB, Windows 11)
+
+- **Warm microphone**: the capture device stays open between dictations, so the mic is live **~6–7 ms** after you press the hotkey (vs 270–540 ms for a cold device open). The first dictation after launch pays a one-time ~0.5 s device open.
+- **Key-down capture**: recording starts the instant the hotkey goes down; the caret-position lookup runs in parallel instead of blocking the mic.
+- **Silence auto-stop (VAD)**: pause for **3 seconds** and dictation stops by itself — no second keypress needed. 8 s timeout if you never speak, 60 s hard cap per session.
+- **End to end**: press → pill instantly → speak → ~3 s pause → cloud transcription (~0.4–2 s depending on clip length) → text pasted at the cursor.
 - **🧠 Context-Aware Formatting & Command Mode**:
   - Automatically formats spoken speech based on the active application context:
     - **Terminals (pwsh, bash, wt)**: Shell command sanitization, flags (`-m`, `--help`), camelCase and snake_case formatting.

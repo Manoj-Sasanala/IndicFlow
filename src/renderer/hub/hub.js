@@ -511,6 +511,20 @@ function bindSettingsEvents() {
   settingGeminiApiKey?.addEventListener('change', (e) => saveSetting('geminiApiKey', e.target.value.trim()));
   settingGroqApiKey?.addEventListener('change', (e) => saveSetting('groqApiKey', e.target.value.trim()));
 
+  // 'change' only fires on blur, so a pasted key was lost if the window closed
+  // while the field still had focus. Save shortly after typing/pasting too.
+  [settingGnaniApiKey, settingGeminiApiKey, settingGroqApiKey].forEach((input) => {
+    if (!input) return;
+    let timer;
+    input.addEventListener('input', () => {
+      clearTimeout(timer);
+      // Don't wipe a working key while the box is momentarily empty mid-paste;
+      // deliberately clearing it still saves on blur.
+      if (!input.value.trim()) return;
+      timer = setTimeout(() => saveSetting(input.id.replace('setting-', ''), input.value.trim()), 400);
+    });
+  });
+
   // Password inputs block Ctrl+C by design, so let the key be revealed for copying.
   document.querySelectorAll('.btn-reveal').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -519,6 +533,17 @@ function bindSettingsEvents() {
       const show = input.type === 'password';
       input.type = show ? 'text' : 'password';
       btn.textContent = show ? 'Hide' : 'Show';
+    });
+  });
+
+  // Copy reads the field value directly, so it works while the key stays masked.
+  document.querySelectorAll('.btn-copy-key').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const input = document.getElementById(btn.dataset.target);
+      if (!input) return;
+      await navigator.clipboard.writeText(input.value);
+      btn.textContent = 'Copied';
+      setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
     });
   });
 }

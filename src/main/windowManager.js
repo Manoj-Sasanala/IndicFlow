@@ -1,7 +1,7 @@
 // @ts-check
 'use strict';
 
-const { BrowserWindow, screen, app } = require('electron');
+const { BrowserWindow, screen, app, Menu } = require('electron');
 const path = require('node:path');
 
 class WindowManager {
@@ -84,6 +84,19 @@ class WindowManager {
       .catch((err) => {
         console.error('[WindowManager] Failed to load Hub HTML:', err.message);
       });
+
+    // Electron shows no right-click menu unless one is supplied, so Cut/Copy/Paste
+    // did nothing in the Hub's text fields.
+    this.hubWindow.webContents.on('context-menu', (event, params) => {
+      if (!params.isEditable && !params.selectionText) return;
+      Menu.buildFromTemplate([
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        { type: 'separator' },
+        { role: 'selectAll' }
+      ]).popup({ window: BrowserWindow.fromWebContents(event.sender) ?? undefined });
+    });
 
     this.hubWindow.show();
     this.hubWindow.focus();

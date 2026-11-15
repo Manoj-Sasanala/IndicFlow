@@ -69,8 +69,8 @@ cd IndicFlow
 # Install dependencies
 npm install
 
-# npm 11+ only: allow Electron to run its install script (downloads the binary)
-# Without this, `npm start` fails — Electron's binary is never downloaded.
+# npm 11+ only: if npm asks to review Electron's install script, approve it
+# (already pre-approved in package.json; run only if `npm start` reports a missing Electron binary)
 npm install-scripts approve electron
 ```
 

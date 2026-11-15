@@ -29,9 +29,9 @@
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
-    "electron": "40.10.2"
+    "electron": "42.11.18"
   },
   "allowScripts": {
-    "electron@40.10.2": true
+    "electron@42.11.18": true
   }
 }

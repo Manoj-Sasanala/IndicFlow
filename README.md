@@ -23,7 +23,7 @@ Powered natively by **Gnani AI's Prisma STT (v3.0)** running on the high-perform
 - **🎯 System-Wide Windows Caret Tracking**:
   - A discreet, floating pill HUD dynamically positions itself right next to your active text caret across any application using Windows UI Automation (`UIAutomationCore`).
 - **⚡ Global Hotkey & Push-to-Talk**:
-  - Native C++ input engine (`FlowHelper.exe`) supporting `Double-tap Fn / CapsLock` or `Ctrl + Space` for zero-lag push-to-talk activation.
+  - Native C++ input engine (`FlowHelper.exe`) supporting `Alt + D` (default) for zero-lag push-to-talk activation.
 - **🧠 Context-Aware Formatting & Command Mode**:
   - Automatically formats spoken speech based on the active application context:
     - **Terminals (pwsh, bash, wt)**: Shell command sanitization, flags (`-m`, `--help`), camelCase and snake_case formatting.
@@ -57,7 +57,7 @@ flowchart TD
 
 ### 1. Prerequisites
 - **Windows 10 / 11** (64-bit)
-- **Node.js** (v20+ recommended, v24 verified)
+- **Node.js v22.5+** (v24 verified) — the app and tests use `node:sqlite`, which does not exist in Node 20
 - A **Gnani AI API Key** from [app.gnani.ai](https://app.gnani.ai) (5,000 free credits available)
 
 ### 2. Installation
@@ -68,10 +68,17 @@ cd IndicFlow
 
 # Install dependencies
 npm install
+
+# npm 11+ only: allow Electron to run its install script (downloads the binary)
+# Without this, `npm start` fails — Electron's binary is never downloaded.
+npm install-scripts approve electron
 ```
 
 ### 3. Configure Your Gnani API Key
-Create a `.env` file in the project root:
+Copy `.env.example` to `.env` and fill in your key:
+```powershell
+Copy-Item .env.example .env
+```
 ```env
 GNANI_API_KEY=your_gnani_api_key_here
 GNANI_MODEL=prisma-v3.0
@@ -83,10 +90,12 @@ PRIMARY_STT_PROVIDER=gnani_prisma
 ### 4. Run Verification Tests
 IndicFlow comes with an exhaustive test suite covering native helper IPC, audio pipelines, SQLite persistence, and Gnani API integration:
 ```powershell
-# Run all tests (53 desktop client tests, 31 AI services tests, 8 integration tests)
+# Run the test suites
 npm test
+npm run test:services
+npm run test:native
 
-# Test live connection to Gnani AI Prisma STT API
+# Test live connection to Gnani AI Prisma STT API (requires GNANI_API_KEY)
 npm run test:gnani
 ```
 
@@ -96,7 +105,7 @@ npm start
 ```
 *Or on Windows, simply double-click **`run.bat`**.*
 - Open any app (e.g., Notepad, WhatsApp, or Chrome).
-- Press your configured hotkey (default: **Double-tap Fn / CapsLock** or click the floating pill).
+- Press the hotkey (default: **`Alt + D`**, changeable in Settings) or click the floating pill.
 - Speak in Hindi, Hinglish, or English:
   > *"Kal subah 10 baje team meeting schedule karni hai."*
 - Watch IndicFlow transcribe and paste your speech in real time!

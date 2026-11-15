@@ -45,7 +45,9 @@ namespace IndicFlowNativeHelper
 
         private const uint GMEM_MOVEABLE = 0x0002;
         private const int DOUBLE_TAP_WINDOW_MS = 380;
-        private const int HOLD_THRESHOLD_MS = 380;
+        // Time the key must be held before capture starts. Every millisecond here is
+        // speech the mic never hears, so keep it just above a deliberate tap.
+        private const int HOLD_THRESHOLD_MS = 200;
 
         // -------------------------------------------------------------
         // Win32 Structs
@@ -1351,29 +1353,25 @@ namespace IndicFlowNativeHelper
             ReleaseModifier(VK_RWIN);
             Thread.Sleep(20);
 
-            // Exactly ONE clean, atomic SendInput dispatch for Ctrl+V
-            INPUT[] inputs = new INPUT[4];
-            inputs[0].type = INPUT_KEYBOARD;
-            inputs[0].mkhi.ki.wVk = VK_CONTROL;
-            inputs[0].mkhi.ki.wScan = 0x1D;
-            inputs[0].mkhi.ki.dwFlags = 0;
+            // Stage the key events instead of sending all four in one batch: some
+            // targets read the V key before the Ctrl state lands, pasting a bare "v".
+            SendKey(VK_CONTROL, 0x1D, false);
+            Thread.Sleep(15);
+            SendKey(VK_V, 0x2F, false);
+            Thread.Sleep(20);
+            SendKey(VK_V, 0x2F, true);
+            Thread.Sleep(15);
+            SendKey(VK_CONTROL, 0x1D, true);
+        }
 
-            inputs[1].type = INPUT_KEYBOARD;
-            inputs[1].mkhi.ki.wVk = VK_V;
-            inputs[1].mkhi.ki.wScan = 0x2F;
-            inputs[1].mkhi.ki.dwFlags = 0;
-
-            inputs[2].type = INPUT_KEYBOARD;
-            inputs[2].mkhi.ki.wVk = VK_V;
-            inputs[2].mkhi.ki.wScan = 0x2F;
-            inputs[2].mkhi.ki.dwFlags = KEYEVENTF_KEYUP;
-
-            inputs[3].type = INPUT_KEYBOARD;
-            inputs[3].mkhi.ki.wVk = VK_CONTROL;
-            inputs[3].mkhi.ki.wScan = 0x1D;
-            inputs[3].mkhi.ki.dwFlags = KEYEVENTF_KEYUP;
-
-            SendInput((uint)inputs.Length, inputs, Marshal.SizeOf(typeof(INPUT)));
+        private static void SendKey(ushort vk, ushort scan, bool up)
+        {
+            INPUT input = new INPUT();
+            input.type = INPUT_KEYBOARD;
+            input.mkhi.ki.wVk = vk;
+            input.mkhi.ki.wScan = scan;
+            input.mkhi.ki.dwFlags = up ? KEYEVENTF_KEYUP : 0;
+            SendInput(1, new INPUT[] { input }, Marshal.SizeOf(typeof(INPUT)));
         }
 
         private static void ReleaseModifier(ushort vk)

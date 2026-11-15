@@ -138,30 +138,34 @@ class DictationCoordinator extends EventEmitter {
     this.sessionStartTime = Date.now();
     this.activeSessionId = 'dict_' + Date.now();
 
-    // Query active textbox context & caret position from native helper
-    let context = { app: 'Unknown', windowTitle: '', textboxContents: '', caretRect: null };
-    try {
-      context = await this.helper.getTextBoxInfo();
-    } catch (e) {
-      console.warn('[Coordinator] Failed to fetch textbox info:', e.message);
-    }
-    if (context && context.app) {
-      this.activeContext = {
-        ...this.activeContext,
-        ...context
-      };
-    }
-
-    // Position and show the floating pill
+    // Start capture immediately. getTextBoxInfo() can block for up to 500ms on a
+    // cross-process UI Automation query, and the mic used to wait behind it.
     if (this.windowManager) {
-      this.windowManager.showPill(context.caretRect);
+      this.windowManager.showPill(null);
     }
 
     this._setState('listening', {
       sessionId: this.activeSessionId,
-      app: context.app || 'Unknown',
+      app: this.activeContext?.app || 'Unknown',
       startTime: this.sessionStartTime
     });
+
+    // Fetch the active textbox context in parallel; it only refines where the
+    // pill sits and how the text is formatted once transcription finishes.
+    try {
+      const context = await this.helper.getTextBoxInfo();
+      if (context && context.app) {
+        this.activeContext = {
+          ...this.activeContext,
+          ...context
+        };
+        if (this.windowManager) {
+          this.windowManager.showPill(context.caretRect);
+        }
+      }
+    } catch (e) {
+      console.warn('[Coordinator] Failed to fetch textbox info:', e.message);
+    }
   }
 
   /**

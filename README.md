@@ -23,7 +23,7 @@ Powered natively by **Gnani AI's Prisma STT (v3.0)** running on the high-perform
 - **🎯 System-Wide Windows Caret Tracking**:
   - A discreet, floating pill HUD dynamically positions itself right next to your active text caret across any application using Windows UI Automation (`UIAutomationCore`).
 - **⚡ Global Hotkey & Push-to-Talk**:
-  - Native C++ input engine (`FlowHelper.exe`) supporting `Alt + D` (default) for zero-lag push-to-talk activation.
+  - Native C# input engine (`FlowHelper.exe`) supporting `Alt + D` (default) for zero-lag push-to-talk activation.
 - **🧠 Context-Aware Formatting & Command Mode**:
   - Automatically formats spoken speech based on the active application context:
     - **Terminals (pwsh, bash, wt)**: Shell command sanitization, flags (`-m`, `--help`), camelCase and snake_case formatting.
@@ -33,7 +33,7 @@ Powered natively by **Gnani AI's Prisma STT (v3.0)** running on the high-perform
 - **📚 Personalization & Custom Jargon Expansion**:
   - Auto-learning user dictionary expands acronyms, technical jargon, and team phrases (e.g., *"k8s"* $\rightarrow$ *"Kubernetes"*).
 - **🛡️ 100% Clean-Room Architecture**:
-  - Built from scratch with an independent Electron 40 shell, Node.js SQLite (`node:sqlite`) with WAL mode, and lightweight C++ native supervisor.
+  - Built from scratch with an independent Electron 42 shell, Node.js SQLite (`node:sqlite`) with WAL mode, and lightweight C# native supervisor.
 
 ---
 
@@ -111,8 +111,9 @@ npm start
 | Test Suite | Components Tested | Pass Rate |
 | :--- | :--- | :--- |
 | **Desktop Client Tests** | Electron window manager, SQLite WAL mode, notes, dictionary, IPC | **53 / 53 PASS** |
-| **AI & Audio Services** | 16kHz downsampling, AudioChunker, RMS silence gate, Context Formatter, Command Classifier, Gnani STT provider | **31 / 31 PASS** |
+| **AI & Audio Services** | 16kHz downsampling, AudioChunker, RMS silence gate, Context Formatter, Command Classifier, Gnani STT provider, hotkey event contract, null-audio stop guard | **38 / 38 PASS** |
 | **E2E Integration** | FlowHelper native IPC, active window caret tracking, end-to-end dictation lifecycle | **8 / 8 PASS** |
+| **Native Helper** | Hotkey hook, UIA context extraction, clipboard paste injection, clean exit | **31 / 31 PASS** |
 | **Gnani Live STT** | Live ping to `api.vachana.ai/stt/v3` with `prisma-v3.0` | **PASS (200 OK)** |
 
 ---
@@ -120,8 +121,8 @@ npm start
 ## 🛠️ Tech Stack
 
 - **Speech Recognition Engine**: [Gnani AI](https://gnani.ai) Prisma STT v3.0 / Vachana AI REST API
-- **Application Shell**: Electron v40.10.2
-- **Native OS Layer**: Win32 C++ (`FlowHelper.exe`, Windows UI Automation, Virtual Key Injection)
+- **Application Shell**: Electron v42.11.18
+- **Native OS Layer**: Win32 C# (`FlowHelper.exe`, Windows UI Automation, Virtual Key Injection)
 - **Local Persistence**: `node:sqlite` DatabaseSync with Write-Ahead Logging (WAL)
 - **Audio Processing**: High-speed Float32/Int16 PCM streaming buffer, RMS speech detector
 

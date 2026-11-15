@@ -100,7 +100,9 @@ class FlowDatabase {
 
   _seedDefaultSettings() {
     const defaultSettings = [
-      ['hotkey', 'Double-Fn / CapsLock'],
+      // Must be a hotkey the native helper can parse (see ConfigureHotkey):
+      // a fresh install with an unparseable default would have no working hotkey.
+      ['hotkey', 'Alt+D'],
       ['activationMode', 'push_to_talk'],
       ['model', 'prisma-v3.0'],
       ['primaryProvider', 'gnani_prisma'],

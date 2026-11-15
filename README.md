@@ -75,17 +75,11 @@ npm install-scripts approve electron
 ```
 
 ### 3. Configure Your Gnani API Key
-Copy `.env.example` to `.env` and fill in your key:
-```powershell
-Copy-Item .env.example .env
-```
-```env
-GNANI_API_KEY=your_gnani_api_key_here
-GNANI_MODEL=prisma-v3.0
-GNANI_LANGUAGE=indic-auto
-PRIMARY_STT_PROVIDER=gnani_prisma
-```
-*(You can also configure this directly in the Settings UI inside the app).*
+Launch the app once (`npm start`), open the Hub, and paste your key into the
+**Gnani API Key** field. It saves automatically and takes effect immediately —
+no restart needed. (The app does not read `.env` at runtime; `.env` is only
+used by the `npm run test:gnani` live-API check, where you can set
+`GNANI_API_KEY` in your shell.)
 
 ### 4. Run Verification Tests
 IndicFlow comes with an exhaustive test suite covering native helper IPC, audio pipelines, SQLite persistence, and Gnani API integration:

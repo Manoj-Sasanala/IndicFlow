@@ -535,6 +535,19 @@ await test('FlowDatabase History & Dictionary SQLite Persistence', async () => {
   assert.equal(found.replacement, 'Dockerfile');
 });
 
+await test('Fresh install seeds a helper-parseable hotkey (Alt+D)', async () => {
+  // Regression: the seed used to be 'Double-Fn / CapsLock', which the native
+  // helper cannot parse, so fresh clones had no working hotkey at all.
+  const freshDbPath = path.join(__dirname, 'test_flow_fresh.sqlite');
+  if (fs.existsSync(freshDbPath)) fs.unlinkSync(freshDbPath);
+  if (fs.existsSync(freshDbPath + '-wal')) fs.unlinkSync(freshDbPath + '-wal');
+  if (fs.existsSync(freshDbPath + '-shm')) fs.unlinkSync(freshDbPath + '-shm');
+  const freshDb = new FlowDatabase(freshDbPath);
+  assert.equal(freshDb.getSetting('hotkey', ''), 'Alt+D');
+  assert.equal(freshDb.getSetting('activationMode', ''), 'push_to_talk');
+  assert.equal(freshDb.getSetting('primaryProvider', ''), 'gnani_prisma');
+});
+
 // -----------------------------------------------------------
 // 7. HOTKEY EVENT CONTRACT (capture must start on key-down)
 // -----------------------------------------------------------

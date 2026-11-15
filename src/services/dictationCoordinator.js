@@ -71,6 +71,7 @@ class DictationCoordinator extends EventEmitter {
       if (triggerType === 'hold_end') {
         if (mode === 'push_to_talk' && this.state === 'listening') {
           console.log('[Coordinator] Hold ended, requesting audio stop');
+          this.ignoreNextPress = false;
           this.requestStopFromRenderer();
         }
         return;
@@ -82,6 +83,9 @@ class DictationCoordinator extends EventEmitter {
         // tap ('press') event, exactly as before.
         if (mode === 'push_to_talk' && this.state === 'idle') {
           await this.startDictation();
+          // The key-up of this same tap still emits 'press'; that one must be
+          // ignored or the tap would stop the session it just started.
+          this.ignoreNextPress = true;
         }
         return;
       }
@@ -89,11 +93,16 @@ class DictationCoordinator extends EventEmitter {
       // Tap / Press (or DoubleTap)
       if (triggerType === 'press') {
         if (this.state === 'idle') {
+          this.ignoreNextPress = false;
           await this.startDictation();
-        } else if (this.state === 'listening' && mode !== 'push_to_talk') {
-          // In push-to-talk a short tap still emits 'press' after capture
-          // already started on key-down; only 'hold_end' may stop that session,
-          // otherwise a quick tap would truncate itself.
+        } else if (this.state === 'listening') {
+          if (mode === 'push_to_talk' && this.ignoreNextPress) {
+            // Same tap's key-up that started capture on key-down: ignore it,
+            // otherwise the tap that started the session would stop it instantly.
+            this.ignoreNextPress = false;
+            return;
+          }
+          this.ignoreNextPress = false;
           this.requestStopFromRenderer();
         }
       }
@@ -103,6 +112,7 @@ class DictationCoordinator extends EventEmitter {
       console.log('[Coordinator] Hotkey released from helper');
       const mode = this.db ? this.db.getSetting('activationMode', 'push_to_talk') : 'push_to_talk';
       if (mode === 'push_to_talk' && this.state === 'listening') {
+        this.ignoreNextPress = false;
         this.requestStopFromRenderer();
       }
     });

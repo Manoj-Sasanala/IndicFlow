@@ -574,11 +574,23 @@ await test('push-to-talk: hold_end stops capture', async () => {
   assert.deepEqual(calls, ['stop']);
 });
 
-await test('push-to-talk: a short tap does not truncate the started session', async () => {
-  const { helper, calls } = makeCoordinator('push_to_talk', 'listening');
+await test('push-to-talk: same-tap key-up is ignored, second tap stops', async () => {
+  const { c, helper, calls } = makeCoordinator('push_to_talk');
+  // First tap: key-down starts, key-up (same tap) must not truncate it.
+  helper.emit('HotkeyTriggered', { triggerType: 'hold_start' });
+  await settle();
+  assert.deepEqual(calls, ['start']);
   helper.emit('HotkeyTriggered', { triggerType: 'press' });
   await settle();
-  assert.deepEqual(calls, [], 'press must not stop a push-to-talk session started on key-down');
+  assert.deepEqual(calls, ['start'], 'same-tap press must be ignored');
+  assert.equal(c.state, 'listening');
+  // Second tap: key-down ignored while listening, key-up stops.
+  helper.emit('HotkeyTriggered', { triggerType: 'hold_start' });
+  await settle();
+  assert.deepEqual(calls, ['start'], 'hold_start while listening must not restart');
+  helper.emit('HotkeyTriggered', { triggerType: 'press' });
+  await settle();
+  assert.deepEqual(calls, ['start', 'stop'], 'second tap must stop the session');
 });
 
 await test('toggle mode: hold_start is ignored, tap still starts and stops', async () => {

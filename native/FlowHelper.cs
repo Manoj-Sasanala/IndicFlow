@@ -1242,12 +1242,17 @@ namespace IndicFlowNativeHelper
             try
             {
                 IntPtr currentForeground = GetForegroundWindow();
-                if (_lastTargetHwnd == IntPtr.Zero && !IsOwnProcessWindow(currentForeground) && currentForeground != IntPtr.Zero)
+                // Dictating into our own UI (Hub notes): paste where the user's
+                // caret already is. _lastTargetHwnd is only ever a non-own
+                // window, so restoring it here would inject into another app.
+                bool foregroundIsOurs = currentForeground != IntPtr.Zero && IsOwnProcessWindow(currentForeground);
+
+                if (!foregroundIsOurs && _lastTargetHwnd == IntPtr.Zero && currentForeground != IntPtr.Zero)
                 {
                     _lastTargetHwnd = currentForeground;
                 }
 
-                if (_lastTargetHwnd != IntPtr.Zero)
+                if (!foregroundIsOurs && _lastTargetHwnd != IntPtr.Zero)
                 {
                     targetThread = GetWindowThreadProcessId(_lastTargetHwnd, out dummyPid);
                     fgThread = (currentForeground != IntPtr.Zero) ? GetWindowThreadProcessId(currentForeground, out dummyPid) : 0;
